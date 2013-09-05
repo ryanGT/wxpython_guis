@@ -1,0 +1,91 @@
+<?xml version="1.0" ?>
+<resource class="wxGrid">
+  <object class="wxFrame" name="main_frame">
+    <object class="wxBoxSizer">
+      <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <object class="wxSplitterWindow" name="main_splitter_window">
+          <object class="wxPanel">
+            <object class="wxBoxSizer">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <object class="wxPanel" name="plot_panel"/>
+                <option>1</option>
+                <flag>wxEXPAND</flag>
+              </object>
+            </object>
+          </object>
+          <object class="wxPanel" name="grid_panel">
+            <object class="wxBoxSizer">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <object class="wxGrid" name="preview_grid"/>
+                <option>1.0</option>
+                <flag>wxEXPAND</flag>
+              </object>
+            </object>
+          </object>
+          <orientation>horizontal</orientation>
+          <sashpos>450</sashpos>
+        </object>
+        <option>0.8</option>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxPanel" name="side_panel">
+          <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+              <object class="wxButton" name="add_file">
+                <label>Add File</label>
+              </object>
+              <flag>wxALL|wxEXPAND|wxGROW</flag>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxStaticText" name="Filename_label">
+                <label>Filename</label>
+              </object>
+              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxBoxSizer">
+                <object class="sizeritem">
+                  <object class="wxTextCtrl" name="file_name_ctrl"/>
+                  <option>1</option>
+                  <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+                  <border>5</border>
+                  <minsize>200,20</minsize>
+                </object>
+                <orient>wxHORIZONTAL</orient>
+              </object>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>Folder</label>
+              </object>
+              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxTextCtrl" name="folder_ctrl">
+                <size>400,20</size>
+              </object>
+              <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+              <minsize>200,20</minsize>
+            </object>
+          </object>
+          <style>wxBORDER_RAISED</style>
+        </object>
+        <option>1.0</option>
+        <flag>wxALL|wxEXPAND|wxGROW</flag>
+        <border>5</border>
+      </object>
+    </object>
+    <pos>50,100</pos>
+    <title>Data Visualizer v. 1.0.0</title>
+  </object>
+</resource>
