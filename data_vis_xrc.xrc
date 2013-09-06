@@ -98,6 +98,27 @@
                   </object>
                   <label>Time Domain</label>
                 </object>
+                <object class="notebookpage">
+                  <object class="wxPanel" name="bode_panel">
+                    <object class="wxBoxSizer">
+                      <orient>wxVERTICAL</orient>
+                      <object class="sizeritem">
+                        <object class="wxBoxSizer">
+                          <orient>wxHORIZONTAL</orient>
+                          <object class="sizeritem">
+                            <object class="wxStaticText">
+                              <label>input channel:</label>
+                            </object>
+                          </object>
+                          <object class="sizeritem">
+                            <object class="wxTextCtrl" name="bode_input_ctrl"/>
+                          </object>
+                        </object>
+                      </object>
+                    </object>
+                  </object>
+                  <label>Bode</label>
+                </object>
               </object>
             </object>
             
