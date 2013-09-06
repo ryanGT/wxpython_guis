@@ -73,7 +73,7 @@ class plot_description(object):
 
 
     def __init__(self, datapath, plot_labels=None, legend_dict={}, \
-                 legloc=1):
+                 legloc=1, bode_input_str=None, bode_output_str=None):
         self.datapath = datapath
         self.plot_labels = plot_labels
         self.legend_dict = legend_dict
@@ -85,6 +85,8 @@ class plot_description(object):
             self.remove_n_and_t_from_plot_labels()
         self.legend_dict = legend_dict
         self.legloc = legloc
+        self.bode_input_str = bode_input_str
+        self.bode_output_str = bode_output_str
         
 
     def create_lable_str(self):
@@ -130,6 +132,12 @@ class plot_description(object):
             leg_str += '%s:%s' % (key, val)
 
         return leg_str
+
+
+    def bode_plot(self, fig, **kwargs):
+        self.df.bode_plot(inlabel=self.bode_input_str, \
+                          outlabel=self.bode_output_str, \
+                          fig=fig, **kwargs)
         
     
 class MyApp(wx.App):
@@ -145,11 +153,24 @@ class MyApp(wx.App):
             ax = fig.axes[0]
         return ax
 
+
+    def get_fig(self):
+        fig = self.plotpanel.fig
+        return fig
+    
         
     def plot_cur_df(self):
+        fig = self.get_fig()
+        fig.clf()
         ax = self.get_axis()
         ax.clear()
         self.cur_plot_description.plot(ax)
+        self.plotpanel.canvas.draw()
+
+
+    def plot_cur_bode(self):
+        fig = self.get_fig()
+        self.cur_plot_description.bode_plot(fig)
         self.plotpanel.canvas.draw()
 
 
@@ -204,14 +225,25 @@ class MyApp(wx.App):
 
 
     def on_update_plot(self, event):
-        print('in on_update_plot')        
-        labels = self.parse_label_str()
-        self.cur_plot_description.plot_labels = labels
-        legend_dict = self.parse_legend_str()
-        self.cur_plot_description.legend_dict = legend_dict
-        legloc = int(self.legloc_ctrl.GetValue())
-        self.cur_plot_description.legloc = legloc
-        self.plot_cur_df()
+        print('in on_update_plot')
+        sel = self.td_bode_notebook.GetSelection()
+        print('sel = %s' % sel)
+        if sel == 0:
+            #time domain plot
+            labels = self.parse_label_str()
+            self.cur_plot_description.plot_labels = labels
+            legend_dict = self.parse_legend_str()
+            self.cur_plot_description.legend_dict = legend_dict
+            legloc = int(self.legloc_ctrl.GetValue())
+            self.cur_plot_description.legloc = legloc
+            self.plot_cur_df()
+        elif sel == 1:
+            #Bode plot
+            input_str = self.bode_input_ctrl.GetValue()
+            output_str = self.bode_output_ctrl.GetValue()
+            self.cur_plot_description.bode_input_str = input_str
+            self.cur_plot_description.bode_output_str = output_str
+            self.plot_cur_bode()
 
         
     def on_add_file(self, event):
@@ -258,6 +290,9 @@ class MyApp(wx.App):
         ## self.panel = xrc.XRCCTRL(self.frame,"MainPanel")
         ## self.new_element_choice = xrc.XRCCTRL(self.frame, "new_element_choice")
         ## self.new_element_choice.SetItems(sorted_elements)
+        self.td_bode_notebook = xrc.XRCCTRL(self.frame,"td_bode_notebook")
+        self.bode_input_ctrl = xrc.XRCCTRL(self.frame,"bode_input_ctrl")
+        self.bode_output_ctrl = xrc.XRCCTRL(self.frame,"bode_output_ctrl")
         self.add_file_button = xrc.XRCCTRL(self.frame,"add_file")
         self.update_plot_button = xrc.XRCCTRL(self.frame, "update_plot_button")
         self.folder_ctrl = xrc.XRCCTRL(self.frame, "folder_ctrl")
