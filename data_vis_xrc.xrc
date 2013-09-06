@@ -77,6 +77,55 @@
               <border>5</border>
               <minsize>200,20</minsize>
             </object>
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>Plot Labels</label>
+              </object>
+              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxTextCtrl" name="label_text_ctrl">
+                <size>400,20</size>
+              </object>
+              <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+              <minsize>200,20</minsize>
+            </object>
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>Legend Dict.</label>
+              </object>
+              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxTextCtrl" name="legend_dict_ctrl">
+                <size>400,20</size>
+              </object>
+              <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+              <minsize>200,20</minsize>
+            </object>
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>legloc</label>
+              </object>
+              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxTextCtrl" name="legloc_ctrl"/>
+              <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxButton" name="update_plot_button">
+                <label>Update Plot</label>
+              </object>
+              <flag>wxALL</flag>
+              <border>5</border>
+            </object>
           </object>
           <style>wxBORDER_RAISED</style>
         </object>
