@@ -115,6 +115,19 @@
                           </object>
                         </object>
                       </object>
+                      <object class="sizeritem">
+                        <object class="wxBoxSizer">
+                          <orient>wxHORIZONTAL</orient>
+                          <object class="sizeritem">
+                            <object class="wxStaticText">
+                              <label>output label:</label>
+                            </object>
+                          </object>
+                          <object class="sizeritem">
+                            <object class="wxTextCtrl" name="bode_output_ctrl"/>
+                          </object>
+                        </object>
+                      </object>
                     </object>
                   </object>
                   <label>Bode</label>
