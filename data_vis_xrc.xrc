@@ -1,8 +1,27 @@
 <?xml version="1.0" ?>
 <resource class="wxBoxSizer">
   <object class="wxFrame" name="main_frame">
+    <object class="wxMenuBar" name="main_menu">
+      <object class="wxMenu" name="file_menu">
+        <label>&amp;File</label>
+        <object class="wxMenuItem" name="add_file_menu">
+          <label>&amp;Add File</label>
+          <accel>ctrl+a</accel>
+        </object>
+        <object class="wxMenuItem" name="exit_menu">
+          <label>&amp;Quit</label>
+          <accel>ctrl+q</accel>
+        </object>
+      </object>
+      <object class="wxMenu" name="plot_menu">
+        <label>&amp;Plot</label>
+        <object class="wxMenuItem" name="update_plot_menu">
+          <label>&amp;Update Plot</label>
+          <accel>ctrl+u</accel>
+        </object>
+      </object>
+    </object>
     <object class="wxBoxSizer">
-      <orient>wxHORIZONTAL</orient>
       <object class="sizeritem">
         <object class="wxSplitterWindow" name="main_splitter_window">
           <object class="wxPanel">
@@ -158,6 +177,7 @@
         <flag>wxALL|wxEXPAND|wxGROW</flag>
         <border>5</border>
       </object>
+      <orient>wxHORIZONTAL</orient>
     </object>
     <pos>50,100</pos>
     <title>Data Visualizer v. 1.0.0</title>
