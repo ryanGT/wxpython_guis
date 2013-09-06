@@ -100,33 +100,25 @@
                 </object>
                 <object class="notebookpage">
                   <object class="wxPanel" name="bode_panel">
-                    <object class="wxBoxSizer">
-                      <orient>wxVERTICAL</orient>
+                    <object class="wxGridSizer">
+                      <cols>2</cols>
+                      <rows>2</rows>
                       <object class="sizeritem">
-                        <object class="wxBoxSizer">
-                          <orient>wxHORIZONTAL</orient>
-                          <object class="sizeritem">
-                            <object class="wxStaticText">
-                              <label>input channel:</label>
-                            </object>
-                          </object>
-                          <object class="sizeritem">
-                            <object class="wxTextCtrl" name="bode_input_ctrl"/>
-                          </object>
+                        <object class="wxStaticText">
+                          <label>input channel:</label>
+                        </object>
+                        <flag>wxALIGN_RIGHT</flag>
+                      </object>
+                      <object class="sizeritem">
+                        <object class="wxTextCtrl" name="bode_input_ctrl"/>
+                      </object>
+                      <object class="sizeritem">
+                        <object class="wxStaticText">
+                          <label>output label:</label>
                         </object>
                       </object>
                       <object class="sizeritem">
-                        <object class="wxBoxSizer">
-                          <orient>wxHORIZONTAL</orient>
-                          <object class="sizeritem">
-                            <object class="wxStaticText">
-                              <label>output label:</label>
-                            </object>
-                          </object>
-                          <object class="sizeritem">
-                            <object class="wxTextCtrl" name="bode_output_ctrl"/>
-                          </object>
-                        </object>
+                        <object class="wxTextCtrl" name="bode_output_ctrl"/>
                       </object>
                     </object>
                   </object>
