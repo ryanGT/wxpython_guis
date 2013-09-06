@@ -69,35 +69,39 @@
               <minsize>200,20</minsize>
             </object>
             <object class="sizeritem">
-              <object class="wxStaticText">
-                <label>Plot Labels</label>
+              <object class="wxNotebook" name="td_bode_notebook">
+                <object class="notebookpage">
+                  <object class="wxPanel" name="td_panel">
+                    <object class="wxBoxSizer">
+                      <orient>wxVERTICAL</orient>
+                      <object class="sizeritem">
+                        <object class="wxStaticText">
+                          <label>Plot Labels</label>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <object class="wxTextCtrl" name="label_text_ctrl">
+                          <size>400,20</size>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <object class="wxStaticText">
+                          <label>Legend Dict.</label>
+                        </object>
+                      </object>
+                      <object class="sizeritem">
+                        <object class="wxTextCtrl" name="legend_dict_ctrl">
+                          <size>400,20</size>
+                        </object>
+                      </object>
+                    </object>
+                  </object>
+                  <label>Time Domain</label>
+                </object>
               </object>
-              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
-              <border>5</border>
             </object>
-            <object class="sizeritem">
-              <object class="wxTextCtrl" name="label_text_ctrl">
-                <size>400,20</size>
-              </object>
-              <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
-              <border>5</border>
-              <minsize>200,20</minsize>
-            </object>
-            <object class="sizeritem">
-              <object class="wxStaticText">
-                <label>Legend Dict.</label>
-              </object>
-              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
-              <border>5</border>
-            </object>
-            <object class="sizeritem">
-              <object class="wxTextCtrl" name="legend_dict_ctrl">
-                <size>400,20</size>
-              </object>
-              <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
-              <border>5</border>
-              <minsize>200,20</minsize>
-            </object>
+            
+            
             <object class="sizeritem">
               <object class="wxStaticText">
                 <label>legloc</label>
