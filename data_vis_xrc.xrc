@@ -101,8 +101,6 @@
                 <object class="notebookpage">
                   <object class="wxPanel" name="bode_panel">
                     <object class="wxGridSizer">
-                      <cols>2</cols>
-                      <rows>2</rows>
                       <object class="sizeritem">
                         <object class="wxStaticText">
                           <label>input channel:</label>
@@ -111,15 +109,22 @@
                       </object>
                       <object class="sizeritem">
                         <object class="wxTextCtrl" name="bode_input_ctrl"/>
+                        <flag>wxALIGN_LEFT</flag>
                       </object>
                       <object class="sizeritem">
                         <object class="wxStaticText">
                           <label>output label:</label>
                         </object>
+                        <flag>wxALIGN_RIGHT</flag>
                       </object>
                       <object class="sizeritem">
                         <object class="wxTextCtrl" name="bode_output_ctrl"/>
+                        <flag>wxALIGN_LEFT</flag>
                       </object>
+                      <cols>2</cols>
+                      <rows>2</rows>
+                      <vgap>1</vgap>
+                      <hgap>0</hgap>
                     </object>
                   </object>
                   <label>Bode</label>
