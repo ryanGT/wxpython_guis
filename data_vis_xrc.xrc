@@ -53,7 +53,6 @@
       <object class="sizeritem">
         <object class="wxPanel" name="side_panel">
           <object class="wxBoxSizer">
-            <orient>wxVERTICAL</orient>
             <object class="sizeritem">
               <object class="wxButton" name="add_file">
                 <label>Add File</label>
@@ -68,7 +67,6 @@
               <flag>wxTOP|wxLEFT|wxRIGHT</flag>
               <border>5</border>
             </object>
-            
             <object class="sizeritem">
               <object class="wxTextCtrl" name="file_name_ctrl"/>
             </object>
@@ -91,8 +89,7 @@
               <object class="wxNotebook" name="td_bode_notebook">
                 <object class="notebookpage">
                   <object class="wxPanel" name="td_panel">
-                    <object class="wxBoxSizer">
-                      <orient>wxVERTICAL</orient>
+                    <object class="wxFlexGridSizer">
                       <object class="sizeritem">
                         <object class="wxStaticText">
                           <label>Plot Labels</label>
@@ -113,6 +110,10 @@
                           <size>400,20</size>
                         </object>
                       </object>
+                      <cols>2</cols>
+                      <rows>2</rows>
+                      <vgap>5</vgap>
+                      <growablecols>1</growablecols>
                     </object>
                   </object>
                   <label>Time Domain</label>
@@ -149,8 +150,6 @@
                 </object>
               </object>
             </object>
-            
-            
             <object class="sizeritem">
               <object class="wxStaticText">
                 <label>legloc</label>
@@ -162,6 +161,31 @@
               <object class="wxTextCtrl" name="legloc_ctrl"/>
               <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
               <border>5</border>
+            </object>
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+              <object class="wxPanel" name="plot_list_panel">
+                <object class="wxFlexGridSizer">
+                  <object class="sizeritem">
+                    <object class="wxStaticText">
+                      <label>Plot List</label>
+                    </object>
+                    <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+                    <border>5</border>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxListBox" name="plot_name_list_box"/>
+                    <option>1</option>
+                    <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
+                    <border>5</border>
+                  </object>
+                  <cols>1</cols>
+                  <rows>2</rows>
+                  <growablecols>0</growablecols>
+                </object>
+              </object>
+              <option>1</option>
+              <flag>wxEXPAND</flag>
             </object>
             <object class="sizeritem">
               <object class="wxButton" name="update_plot_button">
