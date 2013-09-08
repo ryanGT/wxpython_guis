@@ -61,6 +61,27 @@
               <border>5</border>
             </object>
             <object class="sizeritem">
+              <object class="wxPanel" name="plot_name_panel">
+                <object class="wxFlexGridSizer">
+                  <object class="sizeritem">
+                    <object class="wxStaticText">
+                      <label>Plot Name:</label>
+                    </object>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxTextCtrl" name="plot_name_ctrl"/>
+                    <option>1</option>
+                    <flag>wxEXPAND</flag>
+                  </object>
+                  <cols>2</cols>
+                  <rows>1</rows>
+                  <growablecols>1</growablecols>
+                </object>
+              </object>
+              <option>1</option>
+              <flag>wxEXPAND</flag>
+            </object>
+            <object class="sizeritem">
               <object class="wxStaticText" name="Filename_label">
                 <label>Filename</label>
               </object>
@@ -164,41 +185,56 @@
             </object>
             <orient>wxVERTICAL</orient>
             <object class="sizeritem">
-              <object class="wxPanel" name="plot_list_panel">
-                <object class="wxFlexGridSizer">
-                  <object class="sizeritem">
-                    <object class="wxStaticText">
-                      <label>Plot List</label>
-                    </object>
-                    <flag>wxTOP|wxLEFT|wxRIGHT</flag>
-                    <border>5</border>
-                  </object>
-                  <object class="sizeritem">
-                    <object class="wxListBox" name="plot_name_list_box"/>
-                    <option>1</option>
-                    <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
-                    <border>5</border>
-                  </object>
-                  <cols>1</cols>
-                  <rows>2</rows>
-                  <growablecols>0</growablecols>
-                </object>
-              </object>
-              <option>1</option>
-              <flag>wxEXPAND</flag>
-            </object>
-            <object class="sizeritem">
               <object class="wxButton" name="update_plot_button">
                 <label>Update Plot</label>
               </object>
               <flag>wxALL|wxALIGN_CENTRE</flag>
               <border>5</border>
             </object>
+            <object class="sizeritem">
+              <object class="wxPanel" name="plot_list_panel">
+                <object class="wxGridBagSizer">
+                  <object class="sizeritem">
+                    <object class="wxStaticText">
+                      <label>Plot List</label>
+                    </object>
+                    <cellpos>0,0</cellpos>
+                    <cellspan>1,2</cellspan>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxListBox" name="plot_name_list_box"/>
+                    <flag>wxEXPAND</flag>
+                    <cellpos>1,0</cellpos>
+                    <cellspan>1,2</cellspan>
+                  </object>
+                  <growablecols>0</growablecols>
+                  <growablerows>1</growablerows>
+                  <object class="sizeritem">
+                    <object class="wxButton" name="add_to_list_button">
+                      <label>Add to List</label>
+                    </object>
+                    <flag>wxALL</flag>
+                    <border>5</border>
+                    <cellpos>2,0</cellpos>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxButton" name="remove_button">
+                      <label>Remove</label>
+                    </object>
+                    <flag>wxALL</flag>
+                    <border>5</border>
+                    <cellpos>2,1</cellpos>
+                  </object>
+                </object>
+              </object>
+              <option>1</option>
+              <flag>wxEXPAND</flag>
+            </object>
           </object>
           <style>wxBORDER_RAISED</style>
         </object>
         <option>1.0</option>
-        <flag>wxALL|wxEXPAND|wxGROW</flag>
+        <flag>wxALL</flag>
         <border>5</border>
       </object>
       <orient>wxHORIZONTAL</orient>

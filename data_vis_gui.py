@@ -137,12 +137,21 @@ class plot_description(object):
     def bode_plot(self, fig, **kwargs):
         self.df.bode_plot(inlabel=self.bode_input_str, \
                           outlabel=self.bode_output_str, \
+                          clear=False, \
                           fig=fig, **kwargs)
         
     
 class MyApp(wx.App):
-    def plot_already_loaded(self):
-        pass
+    def plot_already_loaded_td(self):
+        for key in self.plot_list:
+            pd = self.plot_dict[key]
+            self.plot_time_domain(pd, clear=False)
+
+
+    def plot_already_loaded_bode(self):
+        for key in self.plot_list:
+            pd = self.plot_dict[key]
+            self.plot_bode(pd)
 
         
     def get_axis(self):
@@ -157,21 +166,39 @@ class MyApp(wx.App):
     def get_fig(self):
         fig = self.plotpanel.fig
         return fig
-    
-        
-    def plot_cur_df(self):
+
+
+    def plot_time_domain(self, plot_descript, clear=False):
+        fig = self.get_fig()
+        if clear:
+            fig.clf()
+        ax = self.get_axis()
+        plot_descript.plot(ax)
+        self.plotpanel.canvas.draw()
+
+
+
+    def plot_all_td(self):
         fig = self.get_fig()
         fig.clf()
-        ax = self.get_axis()
-        ax.clear()
-        self.cur_plot_description.plot(ax)
+        self.plot_already_loaded_td()
+        self.plot_cur_df()
+        
+        
+    def plot_cur_df(self, clear=False):
+        self.plot_time_domain(self.cur_plot_description, clear=clear)
+
+
+    def plot_bode(self, plot_descript, clear=True):
+        fig = self.get_fig()
+        if clear:
+            fig.clf()
+        plot_descript.bode_plot(fig)
         self.plotpanel.canvas.draw()
 
 
     def plot_cur_bode(self):
-        fig = self.get_fig()
-        self.cur_plot_description.bode_plot(fig)
-        self.plotpanel.canvas.draw()
+        self.plot_bode(self.cur_plot_description)
 
 
     def set_labels_ctrl(self):
@@ -221,7 +248,8 @@ class MyApp(wx.App):
         self.data = [cpd.labels] + cpd.data.tolist()
         self.table = MyGridTable(self.data)
         self.preview_grid.SetTable(self.table)
-        self.plot_cur_df()
+        self.plot_all_td()
+        #self.plot_cur_df()
 
 
     def on_update_plot(self, event):
@@ -236,7 +264,8 @@ class MyApp(wx.App):
             self.cur_plot_description.legend_dict = legend_dict
             legloc = int(self.legloc_ctrl.GetValue())
             self.cur_plot_description.legloc = legloc
-            self.plot_cur_df()
+            #self.plot_cur_df()
+            self.plot_all_td()
         elif sel == 1:
             #Bode plot
             input_str = self.bode_input_ctrl.GetValue()
@@ -245,6 +274,15 @@ class MyApp(wx.App):
             self.cur_plot_description.bode_output_str = output_str
             self.plot_cur_bode()
 
+
+    def on_add_to_list_button(self, event):
+        print('on_add_to_list_button')
+        plot_name = self.plot_name_ctrl.GetValue()
+        if plot_name:
+            self.plot_name_list_box.Append(plot_name)
+            self.plot_dict[plot_name] = self.cur_plot_description
+            self.plot_list.append(plot_name)
+        
         
     def on_add_file(self, event):
         """
@@ -297,10 +335,16 @@ class MyApp(wx.App):
         self.update_plot_button = xrc.XRCCTRL(self.frame, "update_plot_button")
         self.folder_ctrl = xrc.XRCCTRL(self.frame, "folder_ctrl")
         self.file_name_ctrl = xrc.XRCCTRL(self.frame, "file_name_ctrl")
+        self.plot_name_ctrl = xrc.XRCCTRL(self.frame, "plot_name_ctrl")
+        self.add_to_list_button = xrc.XRCCTRL(self.frame, "add_to_list_button")
+        self.remove_button = xrc.XRCCTRL(self.frame, "remove_button")
+        self.plot_name_list_box = xrc.XRCCTRL(self.frame, "plot_name_list_box")
         wx.EVT_BUTTON(self.add_file_button, self.add_file_button.GetId(),
                       self.on_add_file)
         wx.EVT_BUTTON(self.update_plot_button, self.update_plot_button.GetId(),
                       self.on_update_plot)
+        wx.EVT_BUTTON(self.add_to_list_button, self.add_to_list_button.GetId(), \
+                      self.on_add_to_list_button)
         self.label_text_ctrl = xrc.XRCCTRL(self.frame, "label_text_ctrl")
         self.legend_dict_ctrl = xrc.XRCCTRL(self.frame, "legend_dict_ctrl")
         self.legloc_ctrl = xrc.XRCCTRL(self.frame, "legloc_ctrl")
@@ -333,6 +377,8 @@ class MyApp(wx.App):
         self.data = data
         self.preview_grid.SetTable(mytable)
         self.table = mytable
+        self.plot_dict = {}
+        self.plot_list = []
         ## self.preview_grid.CreateGrid(5,10)
 
         ## for i in range(5):
