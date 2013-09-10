@@ -142,6 +142,18 @@ class plot_description(object):
         
     
 class MyApp(wx.App):
+    def plot_fig_1(self, event):
+        print('in plot_fig_1, Int=%s' % event.GetInt())
+
+
+    def plot_fig_2(self, event):
+        print('in plot_fig_2, Int=%s' % event.GetInt())
+
+
+    def plot_fig_3(self, event):
+        print('in plot_fig_3, Int=%s' % event.GetInt())
+
+        
     def plot_already_loaded_td(self):
         for key in self.plot_list:
             pd = self.plot_dict[key]
@@ -183,6 +195,13 @@ class MyApp(wx.App):
         fig.clf()
         self.plot_already_loaded_td()
         self.plot_cur_df()
+
+
+    def plot_all_bode(self):
+        fig = self.get_fig()
+        fig.clf()
+        self.plot_already_loaded_bode()
+        self.plot_cur_bode()
         
         
     def plot_cur_df(self, clear=False):
@@ -197,8 +216,8 @@ class MyApp(wx.App):
         self.plotpanel.canvas.draw()
 
 
-    def plot_cur_bode(self):
-        self.plot_bode(self.cur_plot_description)
+    def plot_cur_bode(self, clear=False):
+        self.plot_bode(self.cur_plot_description, clear=clear)
 
 
     def set_labels_ctrl(self):
@@ -272,7 +291,8 @@ class MyApp(wx.App):
             output_str = self.bode_output_ctrl.GetValue()
             self.cur_plot_description.bode_input_str = input_str
             self.cur_plot_description.bode_output_str = output_str
-            self.plot_cur_bode()
+            #self.plot_cur_bode()
+            self.plot_all_bode()
 
 
     def on_add_to_list_button(self, event):
@@ -357,6 +377,47 @@ class MyApp(wx.App):
                         id=xrc.XRCID('update_plot_menu'))
         self.frame.Bind(wx.EVT_MENU, self.on_exit, \
                         id=xrc.XRCID('exit_menu'))
+
+
+        #create figure menu with associated hot key accelerators
+        figure_menu = wx.Menu()
+        fig_menu_ids = []
+        figure_menu_items = []
+
+        accelEntries = []
+        
+        for i in range(3):
+            j = i+1
+            cur_id = wx.NewId()
+            cur_text = 'Figure %i' % j
+            help_text = 'Plot Figure %i' % j
+            cur_item = wx.MenuItem(figure_menu, cur_id, cur_text, help_text, \
+                                   wx.ITEM_RADIO)
+            figure_menu.AppendItem(cur_item)
+            fig_menu_ids.append(cur_id)
+            figure_menu_items.append(cur_item)
+
+            accelEntries.append((wx.ACCEL_CTRL, ord('%i' % j), cur_id))
+            method_name = 'plot_fig_%i' % j
+            method = getattr(self, method_name)
+            self.Bind(wx.EVT_MENU, method, id=cur_id)
+
+        self.figure_menu = figure_menu
+        self.menubar.Append(self.figure_menu, "Figures")
+        self.figure_menu_items = figure_menu_items
+
+        accelTable  = wx.AcceleratorTable(accelEntries)
+        self.frame.SetAcceleratorTable(accelTable)
+
+        ## bindings = [
+        ##           (wx.ACCEL_CTRL,  wx.WXK_UP, self.on_move_up),
+        ##           (wx.ACCEL_CTRL,  wx.WXK_DOWN, self.on_move_down),
+        ##           (wx.ACCEL_CTRL,  wx.WXK_LEFT, self.on_move_left),
+        ##           (wx.ACCEL_CTRL,  wx.WXK_RIGHT, self.on_move_right),
+        ##           ]
+
+
+        
         ## add_file_menu = self.menubar.FindItemById(xrc.XRCID('add_file_menu'))
         ## add_file_menu.Bind(wx.EVT_MENU, self.on_add_file)#, add_file_menu)
         ## update_plot_menu = self.menubar.FindItemById(xrc.XRCID('update_plot_menu'))
