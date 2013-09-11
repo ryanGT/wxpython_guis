@@ -287,6 +287,7 @@ class MyApp(wx.App):
         print('in on_update_plot')
         sel = self.td_bode_notebook.GetSelection()
         print('sel = %s' % sel)
+        #pdb.set_trace()
         if sel == 0:
             #time domain plot
             labels = self.parse_label_str()
@@ -383,13 +384,32 @@ class MyApp(wx.App):
         self.label_text_ctrl.SetValue(label_str)
         legend_str = plot_description.create_legend_str()
         self.legend_dict_ctrl.SetValue(legend_str)
-        self.bode_input_ctrl.SetValue(plot_description.bode_input_str)
-        self.bode_output_ctrl.SetValue(plot_description.bode_output_str)
+        if plot_description.bode_input_str is None:
+            self.bode_input_ctrl.SetValue('')
+        else:
+            self.bode_input_ctrl.SetValue(plot_description.bode_input_str)
+        if plot_description.bode_output_str is None:
+            self.bode_output_ctrl.SetValue('')
+        else:
+            self.bode_output_ctrl.SetValue(plot_description.bode_output_str)
+        folder, filename = os.path.split(plot_description.datapath)
+        self.folder_ctrl.SetValue(folder)
+        self.file_name_ctrl.SetValue(filename)
         
         
     def on_plot_list_box_select(self, event):
         print('in on_plot_list_box_select')
-        
+        inds = self.plot_name_list_box.GetSelections()
+        #pdb.set_trace()
+        if len(inds) == 1:
+            ind = inds[0]
+            key = self.plot_name_list_box.GetString(ind)
+            pd = self.plot_dict[key]
+            self.plot_name_ctrl.SetValue(key)
+            self.plot_parameters_to_gui(pd)
+            self.cur_plot_description = pd
+            print('cpd.datapath = %s' % self.cur_plot_description.datapath)
+            
      
     def OnInit(self):
         #xrcfile = cbook.get_sample_data('ryans_first_xrc.xrc', asfileobj=False)
