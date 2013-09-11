@@ -178,54 +178,68 @@ class MyApp(wx.App):
         return fig
 
 
-    def plot_time_domain(self, plot_descript, clear=False):
+    def plot_time_domain(self, plot_descript, clear=False, draw=True):
         fig = self.get_fig()
         if clear:
             fig.clf()
         ax = self.get_axis()
         plot_descript.plot(ax)
-        self.plotpanel.canvas.draw()
+        if draw:
+            self.plotpanel.canvas.draw()
 
 
 
-    def plot_td(self, inds):
+    def plot_inds(self, inds, plot_method):
         for ind in inds:
             key = self.plot_list[ind]
             pd = self.plot_dict[key]
-            self.plot_time_domain(pd, clear=False)
+            plot_method(pd, clear=False, draw=False)
+        self.plotpanel.canvas.draw()
 
+        
+    def plot_td(self, inds):
+        self.plot_inds(inds, self.plot_time_domain)
+        
 
-    def plot_all_td(self):
+    def get_selected_plot_inds(self):
+        all_items = self.plot_name_list_box.GetItems()
+        inds = self.plot_name_list_box.GetSelections()
+        return inds
+
+    def clear_fig(self):
         fig = self.get_fig()
         fig.clf()
-        #pdb.set_trace()
-        all_items = self.plot_name_list_box.GetItems()
-        print('len all_items = %s' % len(all_items))
-        inds = self.plot_name_list_box.GetSelections()
+
+        
+    def plot_all_td(self):
+        self.clear_fig()
+        inds = self.get_selected_plot_inds()
         if len(inds) > 0:
-            print('selections = %s' % str(inds))
             self.plot_td(inds)
-        ## self.plot_already_loaded_td()
-        ## self.plot_cur_df()
 
 
     def plot_all_bode(self):
-        fig = self.get_fig()
-        fig.clf()
-        self.plot_already_loaded_bode()
-        self.plot_cur_bode()
+        self.clear_fig()
+        inds = self.get_selected_plot_inds()
+        if len(inds) > 0:
+            self.plot_bodes(inds)
+
+
+    def plot_bodes(self, inds):
+        self.plot_inds(inds, self.plot_bode)
         
         
     def plot_cur_df(self, clear=False):
         self.plot_time_domain(self.cur_plot_description, clear=clear)
 
 
-    def plot_bode(self, plot_descript, clear=True):
+    def plot_bode(self, plot_descript, clear=True, draw=True):
         fig = self.get_fig()
         if clear:
             fig.clf()
         plot_descript.bode_plot(fig)
-        self.plotpanel.canvas.draw()
+        if draw:
+            self.plotpanel.canvas.draw()
 
 
     def plot_cur_bode(self, clear=False):
@@ -398,7 +412,6 @@ class MyApp(wx.App):
         
         
     def on_plot_list_box_select(self, event):
-        print('in on_plot_list_box_select')
         inds = self.plot_name_list_box.GetSelections()
         #pdb.set_trace()
         if len(inds) == 1:
@@ -408,12 +421,13 @@ class MyApp(wx.App):
             self.plot_name_ctrl.SetValue(key)
             self.plot_parameters_to_gui(pd)
             self.cur_plot_description = pd
-            print('cpd.datapath = %s' % self.cur_plot_description.datapath)
             
      
     def OnInit(self):
         #xrcfile = cbook.get_sample_data('ryans_first_xrc.xrc', asfileobj=False)
         xrcfile = 'data_vis_xrc.xrc'
+        #xrcfile = 'data_vis_xrc_broken.xrc'
+        #xrcfile = 'data_vis_xrc_editted.xrc'
         print('loading', xrcfile)
 
         self.res = xrc.XmlResource(xrcfile)

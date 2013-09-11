@@ -75,8 +75,18 @@
                     <option>1</option>
                     <flag>wxEXPAND</flag>
                   </object>
+                  <object class="sizeritem">
+                    <object class="wxStaticText" name="dummy1"/>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxButton" name="duplicate_button">
+                      <label>duplicate</label>
+                    </object>
+                    <flag>wxTOP|wxBOTTOM|wxALIGN_RIGHT</flag>
+                    <border>4</border>
+                  </object>
                   <cols>2</cols>
-                  <rows>1</rows>
+                  <rows>2</rows>
                   <growablecols>1</growablecols>
                 </object>
               </object>
