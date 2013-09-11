@@ -323,6 +323,8 @@ class MyApp(wx.App):
 
 
     def on_add_to_list_button(self, event):
+        #FYI, this button no longer exists, but I still need the
+        #method
         print('on_add_to_list_button')
         plot_name = self.plot_name_ctrl.GetValue()
         if plot_name:
@@ -332,6 +334,10 @@ class MyApp(wx.App):
             self.plot_name_list_box.Select(N_items-1)
             self.plot_dict[plot_name] = self.cur_plot_description
             self.plot_list.append(plot_name)
+
+
+    def on_set_as_fig_button(self, event):
+        print('in on_set_as_fig_button')
         
         
     def on_add_file(self, event):
@@ -446,7 +452,7 @@ class MyApp(wx.App):
         self.folder_ctrl = xrc.XRCCTRL(self.frame, "folder_ctrl")
         self.file_name_ctrl = xrc.XRCCTRL(self.frame, "file_name_ctrl")
         self.plot_name_ctrl = xrc.XRCCTRL(self.frame, "plot_name_ctrl")
-        self.add_to_list_button = xrc.XRCCTRL(self.frame, "add_to_list_button")
+        self.set_as_fig_button = xrc.XRCCTRL(self.frame, "set_as_fig_button")
         self.remove_button = xrc.XRCCTRL(self.frame, "remove_button")
         self.plot_name_list_box = xrc.XRCCTRL(self.frame, "plot_name_list_box")
         self.plot_name_list_box.Bind(wx.EVT_LISTBOX, self.on_plot_list_box_select)
@@ -454,8 +460,8 @@ class MyApp(wx.App):
                       self.on_add_file)
         wx.EVT_BUTTON(self.update_plot_button, self.update_plot_button.GetId(),
                       self.on_update_plot)
-        wx.EVT_BUTTON(self.add_to_list_button, self.add_to_list_button.GetId(), \
-                      self.on_add_to_list_button)
+        wx.EVT_BUTTON(self.set_as_fig_button, self.set_as_fig_button.GetId(), \
+                      self.on_set_as_fig_button)
         self.label_text_ctrl = xrc.XRCCTRL(self.frame, "label_text_ctrl")
         self.legend_dict_ctrl = xrc.XRCCTRL(self.frame, "legend_dict_ctrl")
         self.legloc_ctrl = xrc.XRCCTRL(self.frame, "legloc_ctrl")

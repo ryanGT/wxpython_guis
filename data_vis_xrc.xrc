@@ -224,8 +224,8 @@
                   <growablecols>0</growablecols>
                   <growablerows>1</growablerows>
                   <object class="sizeritem">
-                    <object class="wxButton" name="add_to_list_button">
-                      <label>Add to List</label>
+                    <object class="wxButton" name="set_as_fig_button">
+                      <label>Set as Figure</label>
                     </object>
                     <flag>wxALL</flag>
                     <border>5</border>
