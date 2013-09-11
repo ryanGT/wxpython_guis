@@ -142,18 +142,16 @@ class plot_description(object):
         
     
 class MyApp(wx.App):
-    def plot_fig_1(self, event):
-        print('in plot_fig_1, Int=%s' % event.GetInt())
+    def change_fig(self, event):
+        eid = event.GetId()
+        print('in change_fig, Id=%s' % eid)
+        ind = self.figure_menu_ids.index(eid)
+        print('ind = %i' % ind)
+        cur_item = self.figure_menu_items[ind]
+        j = ind + 1
+        cur_item.SetText('Figure %i, hello there' % j)
 
-
-    def plot_fig_2(self, event):
-        print('in plot_fig_2, Int=%s' % event.GetInt())
-
-
-    def plot_fig_3(self, event):
-        print('in plot_fig_3, Int=%s' % event.GetInt())
-
-        
+       
     def plot_already_loaded_td(self):
         for key in self.plot_list:
             pd = self.plot_dict[key]
@@ -190,11 +188,25 @@ class MyApp(wx.App):
 
 
 
+    def plot_td(self, inds):
+        for ind in inds:
+            key = self.plot_list[ind]
+            pd = self.plot_dict[key]
+            self.plot_time_domain(pd, clear=False)
+
+
     def plot_all_td(self):
         fig = self.get_fig()
         fig.clf()
-        self.plot_already_loaded_td()
-        self.plot_cur_df()
+        #pdb.set_trace()
+        all_items = self.plot_name_list_box.GetItems()
+        print('len all_items = %s' % len(all_items))
+        inds = self.plot_name_list_box.GetSelections()
+        if len(inds) > 0:
+            print('selections = %s' % str(inds))
+            self.plot_td(inds)
+        ## self.plot_already_loaded_td()
+        ## self.plot_cur_df()
 
 
     def plot_all_bode(self):
@@ -267,7 +279,7 @@ class MyApp(wx.App):
         self.data = [cpd.labels] + cpd.data.tolist()
         self.table = MyGridTable(self.data)
         self.preview_grid.SetTable(self.table)
-        self.plot_all_td()
+        #self.plot_all_td()
         #self.plot_cur_df()
 
 
@@ -300,6 +312,9 @@ class MyApp(wx.App):
         plot_name = self.plot_name_ctrl.GetValue()
         if plot_name:
             self.plot_name_list_box.Append(plot_name)
+            all_items = self.plot_name_list_box.GetItems()
+            N_items = len(all_items)
+            self.plot_name_list_box.Select(N_items-1)
             self.plot_dict[plot_name] = self.cur_plot_description
             self.plot_list.append(plot_name)
         
@@ -308,7 +323,7 @@ class MyApp(wx.App):
         """
         Create and show the Open FileDialog
         """
-        print('in on_add_file')
+        #print('in on_add_file')
         filename = None
         dirname = None
         
@@ -326,14 +341,55 @@ class MyApp(wx.App):
             self.datapath = os.path.join(dirname, filename)
             self.load_data_file(self.datapath)
             self.preview_grid.Refresh()
+            all_items = self.plot_name_list_box.GetItems()
+            N_items = len(all_items)
+            Q = N_items + 1
+            start_name = 'plot_%i' % Q
+            self.plot_name_ctrl.SetValue(start_name)
+            self.on_add_to_list_button(event)
+            self.plot_all_td()
         dlg.Destroy()
 
         
         return filename, dirname
 
+
     def on_exit(self,event):
         self.frame.Close(True)  # Close the frame.    
 
+
+    def on_change_plot_name(self, event):
+        #inds = self.plot_name_list_box.GetSelections()
+        #ind = inds[0]
+        #key = self.plot_name_list_box.GetString(ind)
+        items = self.plot_name_list_box.GetItems()
+        key = self.old_name
+        if key in items:
+            ind = items.index(key)
+            plot_ind = self.plot_list.index(key)
+            val = self.plot_dict.pop(key)
+            new_key = self.plot_name_ctrl.GetValue()
+            self.plot_list[plot_ind] = new_key
+            self.plot_dict[new_key] = val
+            self.plot_name_list_box.SetString(ind, new_key)
+
+
+    def on_plot_name_get_focus(self, event):
+        self.old_name = self.plot_name_ctrl.GetValue()
+
+
+    def plot_parameters_to_gui(self, plot_description):
+        label_str = plot_description.create_lable_str()
+        self.label_text_ctrl.SetValue(label_str)
+        legend_str = plot_description.create_legend_str()
+        self.legend_dict_ctrl.SetValue(legend_str)
+        self.bode_input_ctrl.SetValue(plot_description.bode_input_str)
+        self.bode_output_ctrl.SetValue(plot_description.bode_output_str)
+        
+        
+    def on_plot_list_box_select(self, event):
+        print('in on_plot_list_box_select')
+        
      
     def OnInit(self):
         #xrcfile = cbook.get_sample_data('ryans_first_xrc.xrc', asfileobj=False)
@@ -359,6 +415,7 @@ class MyApp(wx.App):
         self.add_to_list_button = xrc.XRCCTRL(self.frame, "add_to_list_button")
         self.remove_button = xrc.XRCCTRL(self.frame, "remove_button")
         self.plot_name_list_box = xrc.XRCCTRL(self.frame, "plot_name_list_box")
+        self.plot_name_list_box.Bind(wx.EVT_LISTBOX, self.on_plot_list_box_select)
         wx.EVT_BUTTON(self.add_file_button, self.add_file_button.GetId(),
                       self.on_add_file)
         wx.EVT_BUTTON(self.update_plot_button, self.update_plot_button.GetId(),
@@ -378,14 +435,17 @@ class MyApp(wx.App):
         self.frame.Bind(wx.EVT_MENU, self.on_exit, \
                         id=xrc.XRCID('exit_menu'))
 
-
+        self.plot_name_ctrl.Bind(wx.EVT_KILL_FOCUS, self.on_change_plot_name)
+        self.plot_name_ctrl.Bind(wx.EVT_SET_FOCUS, self.on_plot_name_get_focus)
+        self.plot_name_ctrl.Bind(wx.EVT_TEXT_ENTER, self.on_change_plot_name)
         #create figure menu with associated hot key accelerators
         figure_menu = wx.Menu()
-        fig_menu_ids = []
+        figure_menu_ids = []
         figure_menu_items = []
 
         accelEntries = []
-        
+
+
         for i in range(3):
             j = i+1
             cur_id = wx.NewId()
@@ -394,14 +454,14 @@ class MyApp(wx.App):
             cur_item = wx.MenuItem(figure_menu, cur_id, cur_text, help_text, \
                                    wx.ITEM_RADIO)
             figure_menu.AppendItem(cur_item)
-            fig_menu_ids.append(cur_id)
+            figure_menu_ids.append(cur_id)
             figure_menu_items.append(cur_item)
 
             accelEntries.append((wx.ACCEL_CTRL, ord('%i' % j), cur_id))
-            method_name = 'plot_fig_%i' % j
-            method = getattr(self, method_name)
-            self.Bind(wx.EVT_MENU, method, id=cur_id)
+            #method_name = 'plot_fig_%i' % j
+            self.Bind(wx.EVT_MENU, self.change_fig, id=cur_id)
 
+        self.figure_menu_ids = figure_menu_ids
         self.figure_menu = figure_menu
         self.menubar.Append(self.figure_menu, "Figures")
         self.figure_menu_items = figure_menu_items

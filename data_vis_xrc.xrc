@@ -69,7 +69,9 @@
                     </object>
                   </object>
                   <object class="sizeritem">
-                    <object class="wxTextCtrl" name="plot_name_ctrl"/>
+                    <object class="wxTextCtrl" name="plot_name_ctrl">
+                      <style>wxTE_PROCESS_ENTER</style>
+                    </object>
                     <option>1</option>
                     <flag>wxEXPAND</flag>
                   </object>
@@ -202,7 +204,9 @@
                     <cellspan>1,2</cellspan>
                   </object>
                   <object class="sizeritem">
-                    <object class="wxListBox" name="plot_name_list_box"/>
+                    <object class="wxListBox" name="plot_name_list_box">
+                      <style>wxLB_MULTIPLE|wxLB_EXTENDED</style>
+                    </object>
                     <flag>wxEXPAND</flag>
                     <cellpos>1,0</cellpos>
                     <cellspan>1,2</cellspan>
