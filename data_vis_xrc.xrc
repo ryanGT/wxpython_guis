@@ -12,6 +12,18 @@
           <label>&amp;Quit</label>
           <accel>ctrl+q</accel>
         </object>
+        <object class="wxMenuItem" name="save_plot_description">
+          <label>Save Plot Description (current)</label>
+          <accel>ctrl+s</accel>
+        </object>
+        <object class="wxMenuItem" name="save_gui_state">
+          <label>Save GUI State</label>
+          <accel>ctrl+shift+s</accel>
+        </object>
+        <object class="wxMenuItem" name="load_plot_descriptions">
+          <label>Load Plot Descriptions</label>
+          <accel>ctrl+l</accel>
+        </object>
       </object>
       <object class="wxMenu" name="plot_menu">
         <label>&amp;Plot</label>

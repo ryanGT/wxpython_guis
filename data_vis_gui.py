@@ -25,7 +25,16 @@ import pdb
 
 data_wildcard = "Text files (*.txt; *.csv)|*.txt;*.csv|" \
                 "All files (*.*)|*.*"
+xml_wildcard = "XML files (*.xml)|*.xml"
 
+
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+
+import xml_utils
+from xml_utils import prettify
+
+import wx_utils
 
 class MyGridTable(wx.grid.PyGridTableBase):
     def __init__(self, data):
@@ -58,7 +67,37 @@ class MyGridTable(wx.grid.PyGridTableBase):
         self.data[row][col] = value
 
 
-class plot_description(object):
+class plot_description_file_parser(xml_utils.xml_parser):
+    """This parser will parse a file that may contain a list of
+    plot_description items."""
+    def parse_one_pd(self, pd_xml):
+        assert pd_xml.tag == 'plot_description', \
+               "Child is not a valid plot_description xml chunk."
+        string_dict = xml_utils.children_to_dict(pd_xml)
+        out_dict = copy.copy(string_dict)
+        out_dict['plot_labels'] = xml_utils.list_string_to_list(out_dict['plot_labels'])
+        out_dict['legend_dict'] = xml_utils.dict_string_to_dict(out_dict['legend_dict'])
+        return out_dict
+    
+        
+    def parse(self):
+        assert self.root.tag == 'plot_description_file', \
+               "This does not appear to be a valide plot_description_file."
+        self.pd_xml_list = self.root.getchildren()
+        self.parsed_dicts = [self.parse_one_pd(item) for item in self.pd_xml_list]
+
+
+    def convert(self):
+        self.pd_list = [plot_description(**kwargs) for kwargs in self.parsed_dicts]
+        return self.pd_list
+    
+        
+    def __init__(self, filename):
+        xml_utils.xml_parser.__init__(self, filename)
+        
+
+
+class plot_description(xml_utils.xml_writer):
     """This class will be used to determine how to plot a certain data
     file and ultimately how to save that plot description as an XML
     file."""
@@ -72,9 +111,10 @@ class plot_description(object):
                 i += 1
 
 
-    def __init__(self, datapath, plot_labels=None, legend_dict={}, \
+    def __init__(self, datapath, name='', plot_labels=None, legend_dict={}, \
                  legloc=1, bode_input_str=None, bode_output_str=None):
         self.datapath = datapath
+        self.name = name
         self.plot_labels = plot_labels
         self.legend_dict = legend_dict
         self.df = txt_data_processing.Data_File(datapath)
@@ -87,6 +127,9 @@ class plot_description(object):
         self.legloc = legloc
         self.bode_input_str = bode_input_str
         self.bode_output_str = bode_output_str
+        self.xml_tag_name = 'plot_description'
+        self.xml_attrs = ['name','datapath','plot_labels','legend_dict', \
+                          'bode_input_str','bode_output_str']
         
 
     def create_lable_str(self):
@@ -139,6 +182,75 @@ class plot_description(object):
                           outlabel=self.bode_output_str, \
                           clear=False, \
                           fig=fig, **kwargs)
+        
+
+class figure(object):
+    """Figures will be used to allow my app to switch quickly between
+    different sets of plotted data in a way that is analagous to
+    tabbing between different figures when using pylab/ipython.
+
+    Each figure instance needs to contain enough information to plot
+    one figure."""
+    def __init__(self, plot_descriptions, plot_type, **kwargs):
+        self.plot_descriptions = plot_descriptions
+        self.plot_type = plot_type
+        for key, val in kwargs.iteritems():
+            setattr(self, key, val)
+
+
+
+class time_domain_figure(figure):
+    def __init__(self, plot_descriptions, xlim=None, ylim=None, \
+                 ylabel=None, xlabel=None):
+        figure.__init__(self, plot_descriptions, plot_type='time', \
+                        xlim=xlim, ylim=ylim, \
+                        xlabel=xlabel, ylabel=ylabel)
+
+
+
+
+class bode_figure(figure):
+    def __init__(self, plot_descriptions, \
+                 freqlim=None, maglim=None, phaselim=None):
+        figure.__init__(self, plot_descriptions, plot_type='bode', \
+                        freqlim=freqlim, maglim=maglim, phaselim=phaselim)
+
+
+
+class figure_dialog(wx.Dialog):
+    def __init__(self, parent):
+        pre = wx.PreDialog() 
+        self.PostCreate(pre)
+        res = xrc.XmlResource('figure_name_dialog.xrc')
+        res.LoadOnDialog(self, None, "main_dialog") 
+
+        self.Bind(wx.EVT_BUTTON, self.on_ok, xrc.XRCCTRL(self, "ok_button")) 
+        self.Bind(wx.EVT_BUTTON, self.on_cancel, xrc.XRCCTRL(self, "cancel_button"))
+
+        self.figure_name_ctrl = xrc.XRCCTRL(self, "figure_name_ctrl")
+        self.figure_number_ctrl = xrc.XRCCTRL(self, "figure_number_ctrl")
+
+
+    def on_ok(self, event):
+        self.EndModal(wx.ID_OK)
+
+
+    def on_cancel(self, event):
+        self.EndModal(wx.ID_CANCEL)
+        
+        
+        #wx.Dialog.__init__(self, parent)
+        #sizer = wx.FlexGridSizer(3,2,5,2)
+        #label1 = wx.StaticText(self, label='Figure Name:')
+        #sizer.Add(label1, 0, wx.ALIGN_RIGHT|wx.LEFT, 5)
+        
+        ## sizer =  self.CreateTextSizer('My Buttons')
+        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL, 5)
+        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL, 5)
+        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL, 5)
+        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL|wx.ALIGN_CENTER, 5)
+        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL|wx.EXPAND, 5)
+        ##self.SetSizer(sizer)
         
     
 class MyApp(wx.App):
@@ -284,8 +396,8 @@ class MyApp(wx.App):
         return legend_dict
     
         
-    def load_data_file(self, datapath):
-        self.cur_plot_description = plot_description(datapath)
+    def load_data_file(self, datapath, name=''):
+        self.cur_plot_description = plot_description(datapath, name)
         cpd = self.cur_plot_description
         print('shape = %s, %s' % cpd.data.shape)
         self.set_labels_ctrl()
@@ -296,6 +408,19 @@ class MyApp(wx.App):
         #self.plot_all_td()
         #self.plot_cur_df()
 
+
+    def _update_plot(self):
+        """Simply plot the time domain or Bode plots without updating
+        the GUI or checking for changes in labels or legend stuff.  To
+        be used after loading xml files or in other instances where
+        the GUI was just set programmatically and the plot needs to be
+        redrawn."""
+        sel = self.td_bode_notebook.GetSelection()
+        if sel == 0:
+            self.plot_all_td()
+        elif sel == 1:
+            self.plot_all_bode()
+            
 
     def on_update_plot(self, event):
         print('in on_update_plot')
@@ -322,6 +447,56 @@ class MyApp(wx.App):
             self.plot_all_bode()
 
 
+    def get_new_name(self):
+        all_items = self.plot_name_list_box.GetItems()
+        N_items = len(all_items)
+        Q = N_items + 1
+        new_name = 'plot_%i' % Q
+        return new_name
+        
+
+    def get_pd_name(self, pd):
+        """This is kind of a band-aid method to make up for the fact
+        that I initially allowed plot_description instances without
+        names.  I regret that and am sort of fixing it.
+
+        Note that this method """
+        name = pd.name
+        if (not name) or (name == 'None'):
+            name = self.get_new_name()
+            pd.name = name
+        return name
+
+
+    def add_plot_description(self, pd):
+        """This method consolidates everything needed to a plot
+        description to the GUI.  The intent is to use it when loading
+        plot descriptions from xml files or when the GUI user loads a
+        data file."""
+        #steps:
+        # - update the GUI
+        #   - plot speicific things#<-- only if it is the selected one
+        #   - the plot_list
+        # - add the pd to self.plot_dict
+        # - add the name to self.plot_list
+        name = self.get_pd_name(pd)
+        self.add_name_to_list_box(name)
+        self.add_plot_description_to_backend(pd)
+        
+
+    def add_name_to_list_box(self, plot_name):
+        self.plot_name_list_box.Append(plot_name)
+        all_items = self.plot_name_list_box.GetItems()
+        N_items = len(all_items)
+        self.plot_name_list_box.Select(N_items-1)
+
+
+    def add_plot_description_to_backend(self, plot_desc):
+        name = self.get_pd_name(plot_desc)
+        self.plot_dict[name] = plot_desc
+        self.plot_list.append(name)
+
+        
     def on_add_to_list_button(self, event):
         #FYI, this button no longer exists, but I still need the
         #method
@@ -337,8 +512,39 @@ class MyApp(wx.App):
 
 
     def on_set_as_fig_button(self, event):
-        print('in on_set_as_fig_button')
+        dlg = figure_dialog(self.frame)
+        if dlg.ShowModal() == wx.ID_OK:
+            fig_name = dlg.figure_name_ctrl.GetValue()
+            fig_num = int(dlg.figure_number_ctrl.GetValue())
+            dlg.Destroy()
+        else:
+            dlg.Destroy()
+            return
         
+        
+        inds = self.get_selected_plot_inds()
+        pd_list = []
+        for ind in inds:
+            key = self.plot_name_list_box.GetString(ind)
+            pd = self.plot_dict[key]
+            pd_list.append(pd)
+
+        sel = self.td_bode_notebook.GetSelection()
+        if sel == 0:
+            myclass = time_domain_figure
+        elif sel == 1:
+            myclass = bode_figure
+        fig = myclass(pd_list)
+
+        if fig_num > 9:
+            print('only figure numbers up to 9 are supported')
+            return
+
+        if fig_num >= len(self.figure_list):
+            empty_spots = fig_num - len(self.figure_list)
+            self.figure_list += [None] * empty_spots
+        self.figure_list[fig_num-1] = fig
+
         
     def on_add_file(self, event):
         """
@@ -360,12 +566,12 @@ class MyApp(wx.App):
             self.file_name_ctrl.SetValue(filename)
             self.folder_ctrl.SetValue(dirname)
             self.datapath = os.path.join(dirname, filename)
-            self.load_data_file(self.datapath)
-            self.preview_grid.Refresh()
             all_items = self.plot_name_list_box.GetItems()
             N_items = len(all_items)
             Q = N_items + 1
             start_name = 'plot_%i' % Q
+            self.load_data_file(self.datapath, start_name)
+            self.preview_grid.Refresh()
             self.plot_name_ctrl.SetValue(start_name)
             self.on_add_to_list_button(event)
             self.plot_all_td()
@@ -390,6 +596,7 @@ class MyApp(wx.App):
             plot_ind = self.plot_list.index(key)
             val = self.plot_dict.pop(key)
             new_key = self.plot_name_ctrl.GetValue()
+            val.name = new_key
             self.plot_list[plot_ind] = new_key
             self.plot_dict[new_key] = val
             self.plot_name_list_box.SetString(ind, new_key)
@@ -415,6 +622,9 @@ class MyApp(wx.App):
         folder, filename = os.path.split(plot_description.datapath)
         self.folder_ctrl.SetValue(folder)
         self.file_name_ctrl.SetValue(filename)
+        plot_name = self.get_pd_name(plot_description)
+        self.plot_name_ctrl.SetValue(plot_name)
+
         
         
     def on_plot_list_box_select(self, event):
@@ -428,7 +638,111 @@ class MyApp(wx.App):
             self.plot_parameters_to_gui(pd)
             self.cur_plot_description = pd
             
-     
+
+    def on_duplicate_button(self, event):
+        print('in on_duplicate_button')
+        key = self.plot_name_ctrl.GetValue()
+        pd = self.plot_dict[key]
+        new_pd = copy.copy(pd)
+        new_key = key + '_copy'
+        self.cur_plot_description = new_pd
+        self.plot_name_ctrl.SetValue(new_key)
+        self.on_add_to_list_button(event)
+
+
+    def on_save_current_pd(self, event):
+        print('in on_save_current_pd')
+
+        dlg = wx.FileDialog(self.frame, message="Save Plot Description as XML",
+                    defaultFile="",
+                    wildcard=xml_wildcard,
+                    style=wx.SAVE | wx.CHANGE_DIR
+                    )
+
+        if dlg.ShowModal() == wx.ID_OK:
+            root = ET.Element('plot_description_file')
+            self.cur_plot_description.create_xml(root)
+            pretty_str = prettify(root)
+            filename = dlg.GetFilename()
+            dirname = dlg.GetDirectory()
+            filepath = os.path.join(dirname, filename)
+            f = open(filepath, 'wb')
+            f.write(pretty_str)
+            f.close()
+
+        dlg.Destroy()
+
+
+
+    def on_save_gui_state(self, event):
+        print('in on_save_gui_state')
+        xml_path = wx_utils.my_file_dialog(parent=self.frame, \
+                                           msg="Save GUI state as", \
+                                           kind="save", \
+                                           wildcard=xml_wildcard, \
+                                           )
+        if xml_path:
+            root = ET.Element('data_vis_gui_state')
+            pd_list_xml = ET.SubElement(root, 'plot_description_list')
+
+            for key in self.plot_list:
+                pd = self.plot_dict[key]
+                pd.create_xml(pd_list_xml)
+
+
+            inds = self.plot_name_list_box.GetSelections()
+            params_xml = ET.SubElement(root, 'gui_params')
+            plot_name = self.plot_name_ctrl.GetValue().encode()
+            inds_str = str(list(inds))
+            sel = self.td_bode_notebook.GetSelection()
+            if sel == 0:
+                plot_type = 'time_domain'
+            elif sel == 1:
+                plot_type = 'bode'
+                
+            mydict = {'selected_inds':inds_str, \
+                      'active_plot_name':plot_name, \
+                      'plot_type':plot_type}
+            xml_utils.append_dict_to_xml(params_xml, mydict)
+            
+            xml_utils.write_pretty_xml(root, xml_path)
+        
+        
+    def set_current_plot_descrition(self, pd):
+        self.plot_parameters_to_gui(pd)
+        self.cur_plot_description = pd
+        
+        
+    def on_load_plot_descriptions(self, event):
+        print('in on_load_plot_descriptions')
+        xml_path = wx_utils.my_file_dialog(parent=self.frame, \
+                                           msg="Chose an XML file", \
+                                           default_file="", \
+                                           wildcard=xml_wildcard)
+        if xml_path:
+            myparser = plot_description_file_parser(xml_path)
+            myparser.parse()
+            pd_list = myparser.convert()
+
+            for pd in pd_list:
+                self.add_plot_description(pd)
+
+            self.set_current_plot_descrition(pd_list[-1])
+            self._update_plot()
+
+            
+            # bookmark:
+            #how to add pd instances to self cleanly?
+            #
+            # - pull name from the instance if it is not None or blank
+            #
+            #   - build default name is it is empty or None
+            #
+            # - add name to plot_name_list_box
+            # - append name to self.plot_list
+            # - append to self.plot_dict
+
+        
     def OnInit(self):
         #xrcfile = cbook.get_sample_data('ryans_first_xrc.xrc', asfileobj=False)
         xrcfile = 'data_vis_xrc.xrc'
@@ -454,6 +768,7 @@ class MyApp(wx.App):
         self.plot_name_ctrl = xrc.XRCCTRL(self.frame, "plot_name_ctrl")
         self.set_as_fig_button = xrc.XRCCTRL(self.frame, "set_as_fig_button")
         self.remove_button = xrc.XRCCTRL(self.frame, "remove_button")
+        self.duplicate_button = xrc.XRCCTRL(self.frame, "duplicate_button")
         self.plot_name_list_box = xrc.XRCCTRL(self.frame, "plot_name_list_box")
         self.plot_name_list_box.Bind(wx.EVT_LISTBOX, self.on_plot_list_box_select)
         wx.EVT_BUTTON(self.add_file_button, self.add_file_button.GetId(),
@@ -462,6 +777,8 @@ class MyApp(wx.App):
                       self.on_update_plot)
         wx.EVT_BUTTON(self.set_as_fig_button, self.set_as_fig_button.GetId(), \
                       self.on_set_as_fig_button)
+        wx.EVT_BUTTON(self.duplicate_button, self.duplicate_button.GetId(), \
+                      self.on_duplicate_button)
         self.label_text_ctrl = xrc.XRCCTRL(self.frame, "label_text_ctrl")
         self.legend_dict_ctrl = xrc.XRCCTRL(self.frame, "legend_dict_ctrl")
         self.legloc_ctrl = xrc.XRCCTRL(self.frame, "legloc_ctrl")
@@ -474,7 +791,13 @@ class MyApp(wx.App):
                         id=xrc.XRCID('update_plot_menu'))
         self.frame.Bind(wx.EVT_MENU, self.on_exit, \
                         id=xrc.XRCID('exit_menu'))
-
+        self.frame.Bind(wx.EVT_MENU, self.on_save_current_pd, \
+                        id=xrc.XRCID('save_plot_description'))
+        self.frame.Bind(wx.EVT_MENU, self.on_save_gui_state, \
+                        id=xrc.XRCID('save_gui_state'))
+        self.frame.Bind(wx.EVT_MENU, self.on_load_plot_descriptions, \
+                        id=xrc.XRCID('load_plot_descriptions'))
+        
         self.plot_name_ctrl.Bind(wx.EVT_KILL_FOCUS, self.on_change_plot_name)
         self.plot_name_ctrl.Bind(wx.EVT_SET_FOCUS, self.on_plot_name_get_focus)
         self.plot_name_ctrl.Bind(wx.EVT_TEXT_ENTER, self.on_change_plot_name)
@@ -509,15 +832,6 @@ class MyApp(wx.App):
         accelTable  = wx.AcceleratorTable(accelEntries)
         self.frame.SetAcceleratorTable(accelTable)
 
-        ## bindings = [
-        ##           (wx.ACCEL_CTRL,  wx.WXK_UP, self.on_move_up),
-        ##           (wx.ACCEL_CTRL,  wx.WXK_DOWN, self.on_move_down),
-        ##           (wx.ACCEL_CTRL,  wx.WXK_LEFT, self.on_move_left),
-        ##           (wx.ACCEL_CTRL,  wx.WXK_RIGHT, self.on_move_right),
-        ##           ]
-
-
-        
         ## add_file_menu = self.menubar.FindItemById(xrc.XRCID('add_file_menu'))
         ## add_file_menu.Bind(wx.EVT_MENU, self.on_add_file)#, add_file_menu)
         ## update_plot_menu = self.menubar.FindItemById(xrc.XRCID('update_plot_menu'))
@@ -540,6 +854,7 @@ class MyApp(wx.App):
         self.table = mytable
         self.plot_dict = {}
         self.plot_list = []
+        self.figure_list = []
         ## self.preview_grid.CreateGrid(5,10)
 
         ## for i in range(5):
