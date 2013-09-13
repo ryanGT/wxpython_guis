@@ -278,14 +278,47 @@ class figure_dialog(wx.Dialog):
         
     
 class MyApp(wx.App):
+    def get_plot_description_ind(self, pd):
+        items = self.plot_name_list_box.GetItems()
+        key = pd.name
+        ind = items.index(key)
+        return ind
+
+
+    def get_plot_description_inds(self, pd_list):
+        ind_list = [self.get_plot_description_ind(pd) for pd in pd_list]
+        return ind_list
+
+    
+    def set_selected_plot_descriptions(self, pd_list):
+        self.plot_name_list_box.DeselectAll()
+        ind_list = self.get_plot_description_inds(pd_list)
+        for ind in ind_list:
+            self.plot_name_list_box.Select(ind)
+
+        
+    def set_active_figure(self, ind):
+        print('in set_active_figure')
+        active_fig = self.figure_list[ind]
+        self.set_selected_plot_descriptions(active_fig.plot_descriptions)
+
+        if type(active_fig) == time_domain_figure:
+            sel = 0
+        elif type(active_fig) == bode_figure:
+            sel = 1
+        self.td_bode_notebook.SetSelection(sel)
+
+        self._update_plot()
+
+        
+        
     def change_fig(self, event):
         eid = event.GetId()
         print('in change_fig, Id=%s' % eid)
         ind = self.figure_menu_ids.index(eid)
         print('ind = %i' % ind)
-        cur_item = self.figure_menu_items[ind]
-        j = ind + 1
-        cur_item.SetText('Figure %i, hello there' % j)
+        self.set_active_figure(ind)
+        
 
        
     def plot_already_loaded_td(self):
@@ -567,7 +600,11 @@ class MyApp(wx.App):
         if fig_num >= len(self.figure_list):
             empty_spots = fig_num - len(self.figure_list)
             self.figure_list += [None] * empty_spots
-        self.figure_list[fig_num-1] = fig
+
+        ind = fig_num-1
+        self.figure_list[ind] = fig
+        text = 'Figure %i: %s' % (fig_num, fig_name)
+        self.figure_menu_items[ind].SetText(text)
 
         
     def on_add_file(self, event):
@@ -869,7 +906,17 @@ class MyApp(wx.App):
         accelEntries = []
 
 
-        for i in range(3):
+        cur_id = wx.NewId()
+        cur_text = 'Set as Figure'
+        help_text = 'Set currently selected plots to a Figure #'
+        cur_item = wx.MenuItem(figure_menu, cur_id, cur_text, help_text)
+        figure_menu.AppendItem(cur_item)
+        accelEntries.append((wx.ACCEL_CTRL, ord('F'), cur_id))
+        #method_name = 'plot_fig_%i' % j
+        self.Bind(wx.EVT_MENU, self.on_set_as_fig_button, id=cur_id)
+
+
+        for i in range(9):
             j = i+1
             cur_id = wx.NewId()
             cur_text = 'Figure %i' % j

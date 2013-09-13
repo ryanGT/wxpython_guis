@@ -16,8 +16,8 @@ def get_resources():
 
 
 
-class xrcmain_frame(wx.Frame):
-#!XRCED:begin-block:xrcmain_frame.PreCreate
+class xrcmain_dialog(wx.Dialog):
+#!XRCED:begin-block:xrcmain_dialog.PreCreate
     def PreCreate(self, pre):
         """ This function is called during the class's initialization.
         
@@ -26,13 +26,13 @@ class xrcmain_frame(wx.Frame):
         """
         pass
         
-#!XRCED:end-block:xrcmain_frame.PreCreate
+#!XRCED:end-block:xrcmain_dialog.PreCreate
 
     def __init__(self, parent):
         # Two stage creation (see http://wiki.wxpython.org/index.cgi/TwoStageCreation)
-        pre = wx.PreFrame()
+        pre = wx.PreDialog()
         self.PreCreate(pre)
-        get_resources().LoadOnFrame(pre, parent, "main_frame")
+        get_resources().LoadOnDialog(pre, parent, "main_dialog")
         self.PostCreate(pre)
 
         # Define variables for the controls, bind event handlers
@@ -47,4 +47,4 @@ def __init_resources():
     global __res
     __res = xrc.EmptyXmlResource()
 
-    __res.Load('data_vis_xrc.xrc')
+    __res.Load('figure_name_dialog.xrc')
