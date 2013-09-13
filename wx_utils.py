@@ -13,7 +13,7 @@ def my_file_dialog(parent=None, \
 
     flags = wx.CHANGE_DIR
     
-    if kind.lower() == "open":
+    if kind.lower() in ["open","load"]:
         flags |= wx.OPEN
     elif kind.lower() == "save":
         flags |= wx.SAVE

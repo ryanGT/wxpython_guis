@@ -67,34 +67,58 @@ class MyGridTable(wx.grid.PyGridTableBase):
         self.data[row][col] = value
 
 
+def parse_one_pd(pd_xml):
+    assert pd_xml.tag == 'plot_description', \
+           "Child is not a valid plot_description xml chunk."
+    string_dict = xml_utils.children_to_dict(pd_xml)
+    out_dict = copy.copy(string_dict)
+    out_dict['plot_labels'] = xml_utils.list_string_to_list(out_dict['plot_labels'])
+    out_dict['legend_dict'] = xml_utils.dict_string_to_dict(out_dict['legend_dict'])
+    return out_dict
+
+
 class plot_description_file_parser(xml_utils.xml_parser):
     """This parser will parse a file that may contain a list of
     plot_description items."""
-    def parse_one_pd(self, pd_xml):
-        assert pd_xml.tag == 'plot_description', \
-               "Child is not a valid plot_description xml chunk."
-        string_dict = xml_utils.children_to_dict(pd_xml)
-        out_dict = copy.copy(string_dict)
-        out_dict['plot_labels'] = xml_utils.list_string_to_list(out_dict['plot_labels'])
-        out_dict['legend_dict'] = xml_utils.dict_string_to_dict(out_dict['legend_dict'])
-        return out_dict
-    
-        
     def parse(self):
         assert self.root.tag == 'plot_description_file', \
                "This does not appear to be a valide plot_description_file."
         self.pd_xml_list = self.root.getchildren()
-        self.parsed_dicts = [self.parse_one_pd(item) for item in self.pd_xml_list]
+        self.parsed_dicts = [parse_one_pd(item) for item in self.pd_xml_list]
 
 
     def convert(self):
         self.pd_list = [plot_description(**kwargs) for kwargs in self.parsed_dicts]
         return self.pd_list
     
+         
+    ## def __init__(self, filename):
+    ##     xml_utils.xml_parser.__init__(self, filename)
         
-    def __init__(self, filename):
-        xml_utils.xml_parser.__init__(self, filename)
-        
+
+
+class gui_state_parser(plot_description_file_parser):
+    """class to parse a GUI state from xml"""
+    def get_plot_descriptions(self):
+        self.pd_xml_list = xml_utils.find_child(self.root, 'plot_description_list')
+
+
+    def get_params(self):
+        self.params_xml = xml_utils.find_child(self.root, 'gui_params')
+
+
+    def parse(self):
+        assert self.root.tag == 'data_vis_gui_state', \
+               "This does not appear to be a valid data_vis_gui_state"
+        self.get_plot_descriptions()
+        self.parsed_dicts = [parse_one_pd(item) for item in self.pd_xml_list]
+        self.get_params()
+        self.params = xml_utils.children_to_dict(self.params_xml)
+        self.params['selected_inds'] = xml_utils.list_string_to_list(self.params['selected_inds'])
+
+    ## def convert(self):
+    ##     plot_description_list.convert(self)
+    ##     #bookmark: I need to convert plot_type and selected_inds
 
 
 class plot_description(xml_utils.xml_writer):
@@ -706,7 +730,40 @@ class MyApp(wx.App):
             xml_utils.append_dict_to_xml(params_xml, mydict)
             
             xml_utils.write_pretty_xml(root, xml_path)
-        
+
+
+    def on_load_gui_state(self, event):
+        print('in on_load_gui_state')
+        xml_path = wx_utils.my_file_dialog(parent=self.frame, \
+                                           msg="Load GUI state from XML", \
+                                           kind="open", \
+                                           wildcard=xml_wildcard, \
+                                           )
+        if xml_path:
+            print('xml_path = ' + xml_path)
+            myparser = gui_state_parser(xml_path)
+            #pdb.set_trace()
+            myparser.parse()
+            myparser.convert()
+            for pd in myparser.pd_list:
+                self.add_plot_description(pd)
+
+
+            #set the selected plots
+            self.plot_name_list_box.DeselectAll()
+            for ind in myparser.params['selected_inds']:
+                self.plot_name_list_box.Select(ind)
+            
+
+            #set the current/active plot
+            active_name = myparser.params['active_plot_name']
+            active_pd = self.plot_dict[active_name]
+            self.cur_plot_description = active_pd
+            self.plot_parameters_to_gui(active_pd)
+
+            self._update_plot()
+
+
         
     def set_current_plot_descrition(self, pd):
         self.plot_parameters_to_gui(pd)
@@ -797,6 +854,9 @@ class MyApp(wx.App):
                         id=xrc.XRCID('save_gui_state'))
         self.frame.Bind(wx.EVT_MENU, self.on_load_plot_descriptions, \
                         id=xrc.XRCID('load_plot_descriptions'))
+        self.frame.Bind(wx.EVT_MENU, self.on_load_gui_state, \
+                        id=xrc.XRCID('load_gui_state'))
+
         
         self.plot_name_ctrl.Bind(wx.EVT_KILL_FOCUS, self.on_change_plot_name)
         self.plot_name_ctrl.Bind(wx.EVT_SET_FOCUS, self.on_plot_name_get_focus)

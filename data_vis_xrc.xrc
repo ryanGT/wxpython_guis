@@ -24,6 +24,10 @@
           <label>Load Plot Descriptions</label>
           <accel>ctrl+l</accel>
         </object>
+        <object class="wxMenuItem" name="load_gui_state">
+          <label>Load GUI State</label>
+          <accel>ctrl+shift+l</accel>
+        </object>
       </object>
       <object class="wxMenu" name="plot_menu">
         <label>&amp;Plot</label>
