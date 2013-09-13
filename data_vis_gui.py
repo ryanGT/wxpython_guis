@@ -96,6 +96,39 @@ class plot_description_file_parser(xml_utils.xml_parser):
     ##     xml_utils.xml_parser.__init__(self, filename)
         
 
+class figure_parser(plot_description_file_parser):
+    """Parse an xml file containing a single figure."""
+    def parse(self):
+        assert self.root.tag == 'figure', \
+               "This does not appear to be a valide figure file."
+        children = self.root.getchildren()
+        #a figure file should have one child that is either a
+        #bode_figure or a time_domain_figure
+        assert len(children) == 1, "problem with the children in my xml file"
+        body = children[0]
+        self.class_name = body.tag
+        if self.class_name == 'time_domain_figure':
+            self.myclass = time_domain_figure
+        elif self.class_name == 'bode_figure':
+            self.myclass = bode_figure
+        else:
+            raise ValueError, \
+                  "Not sure what to do with figure type %s" % self.class_name
+        name_xml = xml_utils.find_child(body, 'name')
+        self.name = name_xml.text.strip()
+        
+        self.pd_xml_list = xml_utils.find_child(body, 'plot_description_list')
+        self.parsed_dicts = [parse_one_pd(item) for item in self.pd_xml_list]
+
+        params_xml = xml_utils.find_child(body, 'params')
+        self.params = xml_utils.children_to_dict(params_xml)
+
+
+    def convert(self):
+        plot_description_file_parser.convert(self)
+        fig_instance = self.myclass(self.name, self.pd_list, **self.params)
+        return fig_instance
+    
 
 class gui_state_parser(plot_description_file_parser):
     """class to parse a GUI state from xml"""
@@ -208,37 +241,55 @@ class plot_description(xml_utils.xml_writer):
                           fig=fig, **kwargs)
         
 
-class figure(object):
+class figure(xml_utils.xml_writer):
     """Figures will be used to allow my app to switch quickly between
     different sets of plotted data in a way that is analagous to
     tabbing between different figures when using pylab/ipython.
 
     Each figure instance needs to contain enough information to plot
     one figure."""
-    def __init__(self, plot_descriptions, plot_type, **kwargs):
+    def __init__(self, name, plot_descriptions, plot_type, **kwargs):
+        self.name = name
         self.plot_descriptions = plot_descriptions
         self.plot_type = plot_type
         for key, val in kwargs.iteritems():
             setattr(self, key, val)
 
 
+    def create_xml(self, root):
+        fig_root = ET.SubElement(root, self.xml_tag_name)
+        dict1 = {'name':self.name}
+        xml_utils.append_dict_to_xml(fig_root, dict1)
+        pd_list_xml = ET.SubElement(fig_root, 'plot_description_list')
+
+        for pd in self.plot_descriptions:
+            pd.create_xml(pd_list_xml)
+
+        if self.xml_params:
+            params_xml = ET.SubElement(fig_root, 'params')
+            for attr in self.xml_params:
+                cur_xml = ET.SubElement(params_xml, attr)
+                attr_str = str(getattr(self, attr))
+                cur_xml.text = attr_str.encode()
+
 
 class time_domain_figure(figure):
-    def __init__(self, plot_descriptions, xlim=None, ylim=None, \
+    def __init__(self, name, plot_descriptions, xlim=None, ylim=None, \
                  ylabel=None, xlabel=None):
-        figure.__init__(self, plot_descriptions, plot_type='time', \
+        figure.__init__(self, name, plot_descriptions, plot_type='time', \
                         xlim=xlim, ylim=ylim, \
                         xlabel=xlabel, ylabel=ylabel)
-
-
-
+        self.xml_tag_name = 'time_domain_figure'
+        self.xml_params = ['xlim','ylim','ylabel','xlabel']
+        
 
 class bode_figure(figure):
-    def __init__(self, plot_descriptions, \
+    def __init__(self, name, plot_descriptions, \
                  freqlim=None, maglim=None, phaselim=None):
-        figure.__init__(self, plot_descriptions, plot_type='bode', \
+        figure.__init__(self, name, plot_descriptions, plot_type='bode', \
                         freqlim=freqlim, maglim=maglim, phaselim=phaselim)
-
+        self.xml_tag_name = 'bode_figure'
+        self.xml_params = ['freqlim','maglim','phaselim']
 
 
 class figure_dialog(wx.Dialog):
@@ -299,17 +350,29 @@ class MyApp(wx.App):
         
     def set_active_figure(self, ind):
         print('in set_active_figure')
-        active_fig = self.figure_list[ind]
-        self.set_selected_plot_descriptions(active_fig.plot_descriptions)
+        self.active_fig = self.figure_list[ind]
+        self.set_selected_plot_descriptions(self.active_fig.plot_descriptions)
 
-        if type(active_fig) == time_domain_figure:
+        if type(self.active_fig) == time_domain_figure:
             sel = 0
-        elif type(active_fig) == bode_figure:
+        elif type(self.active_fig) == bode_figure:
             sel = 1
         self.td_bode_notebook.SetSelection(sel)
 
         self._update_plot()
 
+
+    def on_switch_to_bode(self,event):
+        self.td_bode_notebook.SetSelection(1)
+        #feature: how to check for bode readiness?
+        #
+        # - non-empty input and output text boxes?
+        # - first active figure has bode input and output defined?
+
+
+    def on_switch_to_time_domain(self,event):
+        self.td_bode_notebook.SetSelection(0)
+        self._update_plot()
         
         
     def change_fig(self, event):
@@ -591,8 +654,9 @@ class MyApp(wx.App):
             myclass = time_domain_figure
         elif sel == 1:
             myclass = bode_figure
-        fig = myclass(pd_list)
-
+        fig = myclass(fig_name, pd_list)
+        self.active_fig = fig
+        
         if fig_num > 9:
             print('only figure numbers up to 9 are supported')
             return
@@ -733,6 +797,31 @@ class MyApp(wx.App):
 
         dlg.Destroy()
 
+
+
+    def on_save_figure(self, event):
+        print('in on_save_figure')
+        if not hasattr(self, 'active_fig'):
+            print('no active_fig, leaving')
+            #warn here? warning dialog?
+            return
+        elif self.active_fig is None:
+            #warn here as well?
+            #(I don't think this is actually possible -
+            # self.active_fig doesn't have a default value)
+            print('active_fig is None, leaving')
+            return
+
+        
+        xml_path = wx_utils.my_file_dialog(parent=self.frame, \
+                                           msg="Save Figure as", \
+                                           kind="save", \
+                                           wildcard=xml_wildcard, \
+                                           )
+        if xml_path:
+            root = ET.Element('figure')
+            self.active_fig.create_xml(root)
+            xml_utils.write_pretty_xml(root, xml_path)
 
 
     def on_save_gui_state(self, event):
@@ -889,11 +978,16 @@ class MyApp(wx.App):
                         id=xrc.XRCID('save_plot_description'))
         self.frame.Bind(wx.EVT_MENU, self.on_save_gui_state, \
                         id=xrc.XRCID('save_gui_state'))
+        self.frame.Bind(wx.EVT_MENU, self.on_save_figure, \
+                        id=xrc.XRCID('save_figure'))
         self.frame.Bind(wx.EVT_MENU, self.on_load_plot_descriptions, \
                         id=xrc.XRCID('load_plot_descriptions'))
         self.frame.Bind(wx.EVT_MENU, self.on_load_gui_state, \
                         id=xrc.XRCID('load_gui_state'))
-
+        self.frame.Bind(wx.EVT_MENU, self.on_switch_to_bode, \
+                        id=xrc.XRCID('switch_to_bode'))
+        self.frame.Bind(wx.EVT_MENU, self.on_switch_to_time_domain, \
+                        id=xrc.XRCID('switch_to_time_domain'))
         
         self.plot_name_ctrl.Bind(wx.EVT_KILL_FOCUS, self.on_change_plot_name)
         self.plot_name_ctrl.Bind(wx.EVT_SET_FOCUS, self.on_plot_name_get_focus)

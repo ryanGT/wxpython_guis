@@ -20,6 +20,11 @@
           <label>Save GUI State</label>
           <accel>ctrl+shift+s</accel>
         </object>
+        <object class="wxMenuItem" name="save_figure">
+          <label>Save Figure</label>
+          <accel>ctrl+alt+s</accel>
+          <help>Save Active Figure to XML</help>
+        </object>
         <object class="wxMenuItem" name="load_plot_descriptions">
           <label>Load Plot Descriptions</label>
           <accel>ctrl+l</accel>
@@ -28,12 +33,25 @@
           <label>Load GUI State</label>
           <accel>ctrl+shift+l</accel>
         </object>
+        <object class="wxMenuItem" name="load_figure">
+          <label>Load Figure</label>
+          <accel>ctrl+alt+l</accel>
+          <help>Load a Figure Description from an XML file</help>
+        </object>
       </object>
       <object class="wxMenu" name="plot_menu">
         <label>&amp;Plot</label>
         <object class="wxMenuItem" name="update_plot_menu">
           <label>&amp;Update Plot</label>
           <accel>ctrl+u</accel>
+        </object>
+        <object class="wxMenuItem" name="switch_to_time_domain">
+          <label>Switch to Time Domain</label>
+          <accel>ctrl+t</accel>
+        </object>
+        <object class="wxMenuItem" name="switch_to_bode">
+          <label>Switch to Bode</label>
+          <accel>ctrl+b</accel>
         </object>
       </object>
     </object>
