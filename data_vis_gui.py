@@ -409,11 +409,18 @@ class MyApp(wx.App):
 
     def on_switch_to_bode(self,event):
         self.td_bode_notebook.SetSelection(1)
-        #feature: how to check for bode readiness?
-        #
-        # - non-empty input and output text boxes?
-        # - first active figure has bode input and output defined?
-
+        #check for Bode readiness:
+        inds = self.get_selected_plot_inds()
+        safe_to_plot = True
+        for ind in inds:
+            pd = self.get_plot_description_from_ind(ind)
+            if (not pd.bode_input_str) or (not pd.bode_output_str):
+                safe_to_plot = False
+                break
+            
+        if safe_to_plot:
+            self._update_plot()
+                
 
     def on_switch_to_time_domain(self,event):
         self.td_bode_notebook.SetSelection(0)
@@ -465,11 +472,15 @@ class MyApp(wx.App):
             self.plotpanel.canvas.draw()
 
 
+    def get_plot_description_from_ind(self, ind):
+        key = self.plot_list[ind]
+        pd = self.plot_dict[key]
+        return pd
+    
 
     def plot_inds(self, inds, plot_method):
         for ind in inds:
-            key = self.plot_list[ind]
-            pd = self.plot_dict[key]
+            pd = self.get_plot_description_from_ind(ind)
             plot_method(pd, clear=False, draw=False)
         self.plotpanel.canvas.draw()
 
