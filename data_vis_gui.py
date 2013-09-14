@@ -599,9 +599,12 @@ class MyApp(wx.App):
         #   - the plot_list
         # - add the pd to self.plot_dict
         # - add the name to self.plot_list
+        all_items = self.plot_name_list_box.GetItems()
         name = self.get_pd_name(pd)
-        self.add_name_to_list_box(name)
-        self.add_plot_description_to_backend(pd)
+        print('all_items = ' + str(all_items))
+        if name not in all_items:
+            self.add_name_to_list_box(name)
+            self.add_plot_description_to_backend(pd)
         
 
     def add_name_to_list_box(self, plot_name):
@@ -629,6 +632,12 @@ class MyApp(wx.App):
             self.plot_name_list_box.Select(N_items-1)
             self.plot_dict[plot_name] = self.cur_plot_description
             self.plot_list.append(plot_name)
+
+
+    def set_figure_menu_text(self, fig_name, fig_num):
+        ind = fig_num - 1
+        text = 'Figure %i: %s' % (fig_num, fig_name)
+        self.figure_menu_items[ind].SetText(text)
 
 
     def on_set_as_fig_button(self, event):
@@ -667,8 +676,9 @@ class MyApp(wx.App):
 
         ind = fig_num-1
         self.figure_list[ind] = fig
-        text = 'Figure %i: %s' % (fig_num, fig_name)
-        self.figure_menu_items[ind].SetText(text)
+        self.set_figure_menu_text(fig_name, fig_num)
+        ## text = 'Figure %i: %s' % (fig_num, fig_name)
+        ## self.figure_menu_items[ind].SetText(text)
 
         
     def on_add_file(self, event):
@@ -840,6 +850,16 @@ class MyApp(wx.App):
                 pd.create_xml(pd_list_xml)
 
 
+            #figures
+            first = 1
+            for fig in self.figure_list:
+                if fig is not None:
+                    if first:
+                        first = 0
+                        fig_list_xml = ET.SubElement(root, 'figures')
+                    fig.create_xml(fig_list_xml)
+                    
+                            
             inds = self.plot_name_list_box.GetSelections()
             params_xml = ET.SubElement(root, 'gui_params')
             plot_name = self.plot_name_ctrl.GetValue().encode()
@@ -849,10 +869,18 @@ class MyApp(wx.App):
                 plot_type = 'time_domain'
             elif sel == 1:
                 plot_type = 'bode'
-                
+
+            
+            af_name = 'None'
+            if hasattr(self, 'active_fig'):
+                if self.active_fig is not None:
+                    af_name = self.active_fig.name
+            
             mydict = {'selected_inds':inds_str, \
                       'active_plot_name':plot_name, \
-                      'plot_type':plot_type}
+                      'plot_type':plot_type, \
+                      'active_fig':af_name}
+                    
             xml_utils.append_dict_to_xml(params_xml, mydict)
             
             xml_utils.write_pretty_xml(root, xml_path)
@@ -889,6 +917,52 @@ class MyApp(wx.App):
 
             self._update_plot()
 
+
+    def find_empty_figure(self):
+        #if there is a spot in self.figure_list that contains None,
+        #find the first one of those.  If there aren't any, append
+        #None and return the ind of the new None
+        found_one = False
+        for i, item in enumerate(self.figure_list):
+            if item is None:
+                found_one = True
+                break
+
+        if found_one:
+            return i
+        else:
+            i = len(self.figure_list)
+            self.figure_list.append(None)
+            return i
+
+        
+    def on_load_figure(self, event):
+        #What does it mean to load a Figure?
+        # - add the plot descriptions (if they are not already there)
+        # - add figure name to the figure menu
+        # - add figure instance to fig_list
+        # - set the active figure
+        #   - select the right plot descriptions
+        # - redraw the figure
+        xml_path = wx_utils.my_file_dialog(parent=self.frame, \
+                                   msg="Chose an XML file", \
+                                   default_file="", \
+                                   wildcard=xml_wildcard)
+        if xml_path:
+            myparser = figure_parser(xml_path)
+            myparser.parse()
+            myfig = myparser.convert()
+            for pd in myfig.plot_descriptions:
+                self.add_plot_description(pd)
+            #set active plot_description
+            self.cur_plot_description = pd
+            self.plot_parameters_to_gui(pd)
+            
+            ind = self.find_empty_figure()
+            fig_num = ind + 1
+            self.set_figure_menu_text(myfig.name, fig_num)
+            self.figure_list[ind] = myfig
+            self.set_active_figure(ind)
 
         
     def set_current_plot_descrition(self, pd):
@@ -984,6 +1058,8 @@ class MyApp(wx.App):
                         id=xrc.XRCID('load_plot_descriptions'))
         self.frame.Bind(wx.EVT_MENU, self.on_load_gui_state, \
                         id=xrc.XRCID('load_gui_state'))
+        self.frame.Bind(wx.EVT_MENU, self.on_load_figure, \
+                        id=xrc.XRCID('load_figure'))
         self.frame.Bind(wx.EVT_MENU, self.on_switch_to_bode, \
                         id=xrc.XRCID('switch_to_bode'))
         self.frame.Bind(wx.EVT_MENU, self.on_switch_to_time_domain, \
