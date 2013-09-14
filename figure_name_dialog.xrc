@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<resource class="wxPanel">
+  <object class="wxDialog" name="main_dialog">
+    <object class="wxFlexGridSizer">
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>Figure Name:</label>
+        </object>
+        <flag>wxALIGN_RIGHT</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxTextCtrl" name="figure_name_ctrl"/>
+        <option>1</option>
+        <flag>wxEXPAND</flag>
+        <minsize>200,30</minsize>
+      </object>
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>Figure Number:</label>
+        </object>
+        <flag>wxALIGN_RIGHT</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxTextCtrl" name="figure_number_ctrl"/>
+        <minsize>100,30</minsize>
+      </object>
+      <object class="sizeritem">
+        <object class="wxButton" name="cancel_button">
+          <label>Cancel</label>
+        </object>
+        <flag>wxALL</flag>
+        <border>5</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxButton" name="ok_button">
+          <label>OK</label>
+        </object>
+        <flag>wxALL|wxALIGN_RIGHT</flag>
+        <border>5</border>
+      </object>
+      <cols>2</cols>
+      <rows>3</rows>
+      <vgap>5</vgap>
+      <growablecols>1</growablecols>
+      <growablerows>0,1</growablerows>
+    </object>
+    <title>Set as Figure Dialog</title>
+  </object>
+</resource>
