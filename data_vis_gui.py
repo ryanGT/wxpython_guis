@@ -98,14 +98,22 @@ class plot_description_file_parser(xml_utils.xml_parser):
 
 class figure_parser(plot_description_file_parser):
     """Parse an xml file containing a single figure."""
+    def validate_and_get_body(self):
+        if self.root.tag in ['time_domain_figure', 'bode_figure']:
+            body = self.root
+            return body
+        elif self.root.tag == 'figure':
+            children = self.root.getchildren()
+            #a figure file should have one child that is either a
+            #bode_figure or a time_domain_figure
+            assert len(children) == 1, "problem with the children in my xml file"
+            body = children[0]
+            return body
+        else:
+            raise ValueError, "Not sure how to proceed for a figure with tag %s" % self.root.tag
+        
     def parse(self):
-        assert self.root.tag == 'figure', \
-               "This does not appear to be a valide figure file."
-        children = self.root.getchildren()
-        #a figure file should have one child that is either a
-        #bode_figure or a time_domain_figure
-        assert len(children) == 1, "problem with the children in my xml file"
-        body = children[0]
+        body = self.validate_and_get_body()
         self.class_name = body.tag
         if self.class_name == 'time_domain_figure':
             self.myclass = time_domain_figure
@@ -140,6 +148,11 @@ class gui_state_parser(plot_description_file_parser):
         self.params_xml = xml_utils.find_child(self.root, 'gui_params')
 
 
+    def get_figures(self):
+        self.fig_xml_list = xml_utils.find_child_if_it_exists(self.root, \
+                                                              'figures')
+
+    
     def parse(self):
         assert self.root.tag == 'data_vis_gui_state', \
                "This does not appear to be a valid data_vis_gui_state"
@@ -148,10 +161,30 @@ class gui_state_parser(plot_description_file_parser):
         self.get_params()
         self.params = xml_utils.children_to_dict(self.params_xml)
         self.params['selected_inds'] = xml_utils.list_string_to_list(self.params['selected_inds'])
+        self.has_figs = False
+        self.get_figures()
+        if self.fig_xml_list is not None:
+            self.has_figs = True
+            fig_parsers = []
+            for fig_xml in self.fig_xml_list:
+                cur_parser = figure_parser(filename=None)
+                cur_parser.set_root(fig_xml)
+                cur_parser.parse()
+                fig_parsers.append(cur_parser)
+                
+            self.fig_parsers = fig_parsers
 
-    ## def convert(self):
-    ##     plot_description_list.convert(self)
-    ##     #bookmark: I need to convert plot_type and selected_inds
+        
+    def convert(self):
+        plot_description_file_parser.convert(self)
+        if self.has_figs:
+            fig_list = []
+            for fig_parser in self.fig_parsers:
+                cur_fig = fig_parser.convert()
+                fig_list.append(cur_fig)
+
+            self.fig_list = fig_list
+            
 
 
 class plot_description(xml_utils.xml_writer):
@@ -346,6 +379,18 @@ class MyApp(wx.App):
         ind_list = self.get_plot_description_inds(pd_list)
         for ind in ind_list:
             self.plot_name_list_box.Select(ind)
+
+
+
+    def find_fig_ind(self, fig_name):
+        found = 0
+        for i, fig in enumerate(self.figure_list):
+            if fig.name == fig_name:
+                found = 1
+                return i
+            
+        if not found:
+            return None
 
         
     def set_active_figure(self, ind):
@@ -915,6 +960,26 @@ class MyApp(wx.App):
             self.cur_plot_description = active_pd
             self.plot_parameters_to_gui(active_pd)
 
+
+            # load figures here
+            
+            # it should be true that all the plot descriptions are
+            # already loaded
+            if myparser.has_figs:
+                for fig in myparser.fig_list:
+                    ind = self.find_empty_figure()
+                    fig_num = ind + 1
+                    self.set_figure_menu_text(fig.name, fig_num)
+                    self.figure_list[ind] = fig
+
+                if myparser.params.has_key('active_fig'):
+                    active_fig_name = myparser.params['active_fig']
+                    ind = self.find_fig_ind(active_fig_name)
+
+                #ind will be the last ind aded if active_fig is not a
+                #saved parameter
+                self.set_active_figure(ind)
+
             self._update_plot()
 
 
@@ -988,16 +1053,7 @@ class MyApp(wx.App):
             self._update_plot()
 
             
-            # bookmark:
-            #how to add pd instances to self cleanly?
-            #
-            # - pull name from the instance if it is not None or blank
-            #
-            #   - build default name is it is empty or None
-            #
-            # - add name to plot_name_list_box
-            # - append name to self.plot_list
-            # - append to self.plot_dict
+
 
         
     def OnInit(self):
