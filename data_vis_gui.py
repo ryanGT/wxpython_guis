@@ -16,8 +16,11 @@ Main Class
 
 The main GUI class is :py:class:`MyApp`.
 
-Workflow
+Overview
 ============
+
+Workflow 
+++++++++++++
 
 The basic workflow in using the app would most likely be as follows:
 
@@ -31,7 +34,7 @@ The basic workflow in using the app would most likely be as follows:
     the user can specifiy which columns to plot.  The primary goal of
     :py:meth:`MyApp.load_data_file` is to create an instance of the
     class :py:class:`plot_description` from the data file.  A
-    :py:class`MyApp.load_data_file` instace specifies how to turn a
+    :py:class:`MyApp.load_data_file` instace specifies how to turn a
     data file into a journal quality
     plot. :py:meth:`MyApp.load_data_file` also sets the attribute
     :py:attr:`MyApp.cur_plot_description`.  Any changes to the various
@@ -61,7 +64,68 @@ The basic workflow in using the app would most likely be as follows:
   - this is done mainly be selecting which plot descriptions to
     include on the current plot by selecting or deselecting their
     names in the list box :py:attr:`MyApp.plot_name_list_box`
+
+  - a set of selected plot descriptions can be set as a
+    :py:class:`figure` to allow the user to switch back and forth
+    between figures in a manner that is similar to tabbing between
+    open figures in pylab.
+
+    - Additionall, the active figure can be saved to an XML file.
+
+
+Main Classes
+++++++++++++++++
+
+- :py:class:`MyApp` is the main GUI class
+
+- :py:class:`plot_description` is the class for describing how to plot
+  a data file; a plot_description includes the path to the datafile,
+  which columns (labels) to plot on the time domain plot, how to map
+  the labels to time domain legend entries (using a dictionary
+  legend_dict), and which labels correspond to the input and output
+  for a Bode plot
+
+- :py:class:`figure` represents a group of plot descriptions and the
+  other details needed to recreate one figure
+
+  - :py:class:`time_domain_figure` is a child of :py:class:`figure`
+    that specifically represents a time domain figure
+
+  - :py:class:`bode_figure` is another child of :py:class:`figure`
+    that represents a Bode figure
+
+
+XML Praser Classes
+++++++++++++++++++++++
+
+- :py:class:`plot_description_file_parser` parses the XML of a file
+  containing one or more plot_descriptions
   
+- :py:class:`figure_parser` parses the XML of a single figure
+
+- :py:class:`gui_state_parser` parses an XML file that restores the
+  entire GUI state (all plot descriptions and figures, the selected
+  plot descriptions, ....)
+
+- note that my XML parses will typically have a :py:meth:`parse`
+  method and :py:meth:`convert` method.  The :py:meth:`parse` method
+  must be called first and will typically either return a list of
+  dictionaries or set some attributes of the class to either
+  dictionaries, lists of dictionaries, or text or other constants
+
+Helper Classes
++++++++++++++++++++
+
+- :py:class:`MyGridTable` is used to link the data from the txt data
+  file with the preview grid display
+  
+- :py:class:`figure_dialog` is a good example of using wxPython's xrc
+  stuff to create custom dialogs; this dialog helps the user
+  specify the name and figure number of a :py:class:`figure`
+  instance that is being created
+
+
+
 
 Autodoc Class and Method Documentation
 ==========================================
@@ -105,6 +169,8 @@ from xml_utils import prettify
 import wx_utils
 
 class MyGridTable(wx.grid.PyGridTableBase):
+    """Helper class to link the data from a csv or txt file to the
+    wxPython GUI wx.grid instance"""
     def __init__(self, data):
         wx.grid.PyGridTableBase.__init__(self)
         self.data = data
@@ -136,6 +202,8 @@ class MyGridTable(wx.grid.PyGridTableBase):
 
 
 def parse_one_pd(pd_xml):
+    """parse the XML for one :py:class:`plot_description` and return a
+    dictionary of the coresponding parameters for the class instance"""
     assert pd_xml.tag == 'plot_description', \
            "Child is not a valid plot_description xml chunk."
     string_dict = xml_utils.children_to_dict(pd_xml)
@@ -146,9 +214,13 @@ def parse_one_pd(pd_xml):
 
 
 class plot_description_file_parser(xml_utils.xml_parser):
-    """This parser will parse a file that may contain a list of
+    """This parser will parse an XML file that may contain a list of
     plot_description items."""
     def parse(self):
+        """Parse the XML associated with :py:attr:`self.root`.  This
+        method creates a list of dictionaries where each dictionary
+        corresponds to one :py:class:`plot_description`.  The list is
+        stored in :py:attr:`self.parsed_dicts`."""
         assert self.root.tag == 'plot_description_file', \
                "This does not appear to be a valide plot_description_file."
         self.pd_xml_list = self.root.getchildren()
@@ -156,7 +228,12 @@ class plot_description_file_parser(xml_utils.xml_parser):
 
 
     def convert(self):
-        self.pd_list = [plot_description(**kwargs) for kwargs in self.parsed_dicts]
+        """Convert the list of parse dictionaries in
+        :py:attr:`self.parsed_dicts` to a list of
+        :py:class:`plot_description` instances and save that list as
+        :py:attr:`self.pd_list`"""
+        self.pd_list = [plot_description(**kwargs) for \
+                        kwargs in self.parsed_dicts]
         return self.pd_list
     
          
@@ -165,8 +242,11 @@ class plot_description_file_parser(xml_utils.xml_parser):
         
 
 class figure_parser(plot_description_file_parser):
-    """Parse an xml file containing a single figure."""
+    """Parse an XML file containing a single figure."""
     def validate_and_get_body(self):
+        """verify that the XML in :py:attr:`self.root` is either from
+        an XML file containing a single figure or it is the time
+        domain or Bode figure portion of a saved full GUI description."""
         if self.root.tag in ['time_domain_figure', 'bode_figure']:
             body = self.root
             return body
@@ -181,6 +261,9 @@ class figure_parser(plot_description_file_parser):
             raise ValueError, "Not sure how to proceed for a figure with tag %s" % self.root.tag
         
     def parse(self):
+        """convert the XML associated with self to a list of parsed
+        dicts and also find :py:attr:`self.name` and
+        :py:attr:`self.params`"""
         body = self.validate_and_get_body()
         self.class_name = body.tag
         if self.class_name == 'time_domain_figure':
@@ -201,6 +284,10 @@ class figure_parser(plot_description_file_parser):
 
 
     def convert(self):
+        """convert the list of parse dictionaries in
+        :py:attr:`self.parsed_dicts to :py:class:`plot_description`
+        instances and then also create and return a :py:class:`figure`
+        instance"""
         plot_description_file_parser.convert(self)
         fig_instance = self.myclass(self.name, self.pd_list, **self.params)
         return fig_instance
@@ -222,6 +309,7 @@ class gui_state_parser(plot_description_file_parser):
 
     
     def parse(self):
+        """Parse the GUI state"""
         assert self.root.tag == 'data_vis_gui_state', \
                "This does not appear to be a valid data_vis_gui_state"
         self.get_plot_descriptions()
@@ -244,6 +332,8 @@ class gui_state_parser(plot_description_file_parser):
 
         
     def convert(self):
+        """Convert the GUI state; generates a list of plot
+        descriptions and a list of figures (:py:meth:`self.fig_list`)"""
         plot_description_file_parser.convert(self)
         if self.has_figs:
             fig_list = []
@@ -257,9 +347,14 @@ class gui_state_parser(plot_description_file_parser):
 
 class plot_description(xml_utils.xml_writer):
     """This class will be used to determine how to plot a certain data
-    file and ultimately how to save that plot description as an XML
-    file."""
+    file and how to save that plot description as an XML file.  The
+    datapath passed into the :py:meth:`plot_description.__init__`
+    method is used to create a
+    :py:class:`txt_data_processing.Data_File` instance."""
     def remove_n_and_t_from_plot_labels(self):
+        """Data files from my PSoC or Arduino tests often have t and n
+        as the first two columns.  It does not typically make sense to
+        plot these two columns."""
         i = 0
         while i < len(self.plot_labels):
             label = self.plot_labels[i]
@@ -291,6 +386,8 @@ class plot_description(xml_utils.xml_writer):
         
 
     def create_lable_str(self):
+        """convert the columns labels of the data file into a command
+        delimitted string that can be place in one text box"""
         label_str = ''
         first = True
 
@@ -305,6 +402,9 @@ class plot_description(xml_utils.xml_writer):
 
 
     def plot(self, ax, clear=False):
+        """create a time domain plot by calling the
+        :py:meth:`Time_Plot` method of :py:attr:`self.df`, the
+        underlying :py:class:`txt_data_processing.Data_File` instance"""
         self.df.Time_Plot(labels=self.plot_labels, ax=ax, clear=clear, \
                           legloc=self.legloc, legend_dict=self.legend_dict, \
                           )
@@ -316,10 +416,14 @@ class plot_description(xml_utils.xml_writer):
 
 
     def _create_legend_dict(self):
+        """Create the initial legend_dict by setting the keys and
+        values to :py:attr:`self.plot_labels`"""
         self.legend_dict = dict(zip(self.plot_labels, self.plot_labels))
         
 
     def create_legend_str(self):
+        """convert :py:attr:`self.legend_dict` to a comma and colon
+        delimited representation to place in a text control"""
         if not self.legend_dict:
             self._create_legend_dict()
         leg_str = ''
@@ -336,6 +440,10 @@ class plot_description(xml_utils.xml_writer):
 
 
     def bode_plot(self, fig, **kwargs):
+        """Generate a Bode plot by calling
+        :py:meth:`plot_description.df.bode_plot`, i.e. the
+        :py:meth:`bode_plot` method of the underlying
+        :py:class:`txt_data_processing.Data_File` instance"""
         self.df.bode_plot(inlabel=self.bode_input_str, \
                           outlabel=self.bode_output_str, \
                           clear=False, \
@@ -350,6 +458,7 @@ class figure(xml_utils.xml_writer):
     Each figure instance needs to contain enough information to plot
     one figure."""
     def __init__(self, name, plot_descriptions, plot_type, **kwargs):
+        """Is this always skipped? - yes"""
         self.name = name
         self.plot_descriptions = plot_descriptions
         self.plot_type = plot_type
@@ -358,6 +467,9 @@ class figure(xml_utils.xml_writer):
 
 
     def create_xml(self, root):
+        """The figure class derives from
+        :py:class:`xml_utils.xml_writer`.  This is the main method for
+        saving the instance to xml."""
         fig_root = ET.SubElement(root, self.xml_tag_name)
         dict1 = {'name':self.name}
         xml_utils.append_dict_to_xml(fig_root, dict1)
@@ -375,6 +487,11 @@ class figure(xml_utils.xml_writer):
 
 
 class time_domain_figure(figure):
+    """This is a sublcass of :py:class:`figure` that reprents a time
+    domain figure.  In some sense, :py:class:`figure` was never meant
+    to be used directly (it is kind of a an abstract class).  So, the
+    user should create either a :py:class:`time_domain_figure` or a
+    :py:class:`bode_figure`."""
     def __init__(self, name, plot_descriptions, xlim=None, ylim=None, \
                  ylabel=None, xlabel=None):
         figure.__init__(self, name, plot_descriptions, plot_type='time', \
@@ -385,6 +502,10 @@ class time_domain_figure(figure):
         
 
 class bode_figure(figure):
+    """This is a subclass of :py:class:`figure` that represents a Bode
+    figure.  Mainly, that means that the parameters that are saved to
+    XML are:py:attr:`freqlim`, :py:attr:`maglim`, and
+    :py:attr:`phaselim`."""
     def __init__(self, name, plot_descriptions, \
                  freqlim=None, maglim=None, phaselim=None):
         figure.__init__(self, name, plot_descriptions, plot_type='bode', \
@@ -394,6 +515,17 @@ class bode_figure(figure):
 
 
 class figure_dialog(wx.Dialog):
+    """Dialog to set a group of plot descriptions as a
+    :py:class:`figure` instance.  The dialog prompts the user for a
+    figure name and number.  The number sets the hotkey on the figure
+    menu for switching to that plot.  Note that no attempt is made to
+    check if the user is overwriting an existing figure on the menu.
+
+    Note that this class uses wxPython xrc to create a dialog within
+    an app that is created from a different wxPython xrc file.  I am
+    using the wxPython two stage creation approach (sort of, I guess).
+    That is what the webpage I found this on said and that is what the
+    pre and post stuff does."""
     def __init__(self, parent):
         pre = wx.PreDialog() 
         self.PostCreate(pre)
@@ -408,15 +540,17 @@ class figure_dialog(wx.Dialog):
 
         self.figure_number_ctrl.Bind(wx.EVT_TEXT_ENTER, self.on_enter)
 
-        #self.Bind(wx.EVT_TEXT_ENTER, self.on_enter, self.figure_number_ctrl.GetId())
-        #self.text_Date.Bind(wx.EVT_TEXT_ENTER, self.text_Date_update , 
-        #self.text_Date) 
 
     def on_ok(self, event):
+        """Close and return wx.ID_OK if the user clicks OK"""
         self.EndModal(wx.ID_OK)
 
 
     def on_enter(self, event):
+        """Validate the input by looking for an integer in the figure
+        number text control and a non-empty string in the figure name
+        text control.  If both of these are valid, close the dialog
+        and return wx.ID_OK."""
         name = self.figure_name_ctrl.GetValue()
         fig_num_str = self.figure_number_ctrl.GetValue()
 
@@ -431,21 +565,9 @@ class figure_dialog(wx.Dialog):
 
 
     def on_cancel(self, event):
+        """Close the dialog and return wx.ID_CANCEL"""
         self.EndModal(wx.ID_CANCEL)
         
-        
-        #wx.Dialog.__init__(self, parent)
-        #sizer = wx.FlexGridSizer(3,2,5,2)
-        #label1 = wx.StaticText(self, label='Figure Name:')
-        #sizer.Add(label1, 0, wx.ALIGN_RIGHT|wx.LEFT, 5)
-        
-        ## sizer =  self.CreateTextSizer('My Buttons')
-        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL, 5)
-        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL, 5)
-        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL, 5)
-        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL|wx.ALIGN_CENTER, 5)
-        ## sizer.Add(wx.Button(self, -1, 'Button'), 0, wx.ALL|wx.EXPAND, 5)
-        ##self.SetSizer(sizer)
         
     
 class MyApp(wx.App):
@@ -522,21 +644,9 @@ class MyApp(wx.App):
         print('ind = %i' % ind)
         self.set_active_figure(ind)
         
-
-       
-    def plot_already_loaded_td(self):
-        for key in self.plot_list:
-            pd = self.plot_dict[key]
-            self.plot_time_domain(pd, clear=False)
-
-
-    def plot_already_loaded_bode(self):
-        for key in self.plot_list:
-            pd = self.plot_dict[key]
-            self.plot_bode(pd)
-
         
     def get_axis(self):
+        """Get or create the main axis for time domain plots"""
         fig = self.plotpanel.fig
         if len(fig.axes) == 0:
             ax = fig.add_subplot(111)
@@ -546,11 +656,14 @@ class MyApp(wx.App):
 
 
     def get_fig(self):
+        """Get the figure instance from :py:attr:`MyApp.plotpanel`"""
         fig = self.plotpanel.fig
         return fig
 
 
     def plot_time_domain(self, plot_descript, clear=False, draw=True):
+        """This is the underlying method for plotting one time domain
+        plot description"""
         fig = self.get_fig()
         if clear:
             fig.clf()
@@ -567,6 +680,10 @@ class MyApp(wx.App):
     
 
     def plot_inds(self, inds, plot_method):
+        """This is the underlying method for plotting either time
+        domain or Bode plots for the plot descriptions corresponding
+        to inds (inds refers to the indices in
+        :py:attr:`MyApp.plot_name_list_box`"""
         for ind in inds:
             pd = self.get_plot_description_from_ind(ind)
             plot_method(pd, clear=False, draw=False)
@@ -613,10 +730,6 @@ class MyApp(wx.App):
         self.plot_inds(inds, self.plot_bode)
         
         
-    def plot_cur_df(self, clear=False):
-        self.plot_time_domain(self.cur_plot_description, clear=clear)
-
-
     def plot_bode(self, plot_descript, clear=True, draw=True):
         fig = self.get_fig()
         if clear:
