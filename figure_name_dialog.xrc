@@ -21,7 +21,9 @@
         <flag>wxALIGN_RIGHT</flag>
       </object>
       <object class="sizeritem">
-        <object class="wxTextCtrl" name="figure_number_ctrl"/>
+        <object class="wxTextCtrl" name="figure_number_ctrl">
+          <style>wxTE_PROCESS_ENTER</style>
+        </object>
         <minsize>100,30</minsize>
       </object>
       <object class="sizeritem">

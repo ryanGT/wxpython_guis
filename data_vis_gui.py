@@ -1,3 +1,71 @@
+"""
+
+Introduction
+================
+
+This module uses wxPython to create a GUI for visualizing 2D data
+in both time domain plots and Bode plots.  I am using this GUI to help
+guide model refinement for DT-TMM modeling of dynamic systems, but it
+should be useful for any situation in which time domain data needs to
+be plotted quickly and easily.  This GUI should be espeically useful
+for dynamic system data where Bode plots and time domain plots are
+used together.
+
+Main Class
+==============
+
+The main GUI class is :py:class:`MyApp`.
+
+Workflow
+============
+
+The basic workflow in using the app would most likely be as follows:
+
+- add a data file (txt or csv) to the workspace by pressing the
+  "Add File" button which calls the method :py:meth:`MyApp.on_add_file`
+
+  - assuming the users correctly selects a data file and presses OK,
+    the method :py:meth:`MyApp.load_data_file` is called.  This method
+    shows a preview of the data in the :py:attr:`MyApp.preview_grid`
+    and loads the data file parameters into the text controls so that
+    the user can specifiy which columns to plot.  The primary goal of
+    :py:meth:`MyApp.load_data_file` is to create an instance of the
+    class :py:class:`plot_description` from the data file.  A
+    :py:class`MyApp.load_data_file` instace specifies how to turn a
+    data file into a journal quality
+    plot. :py:meth:`MyApp.load_data_file` also sets the attribute
+    :py:attr:`MyApp.cur_plot_description`.  Any changes to the various
+    text controls operate on the properties of
+    :py:attr:`MyApp.cur_plot_description`
+    
+  - if a Bode plot will be generated, click the Bode tab of the
+    notebook control and specify the input and output channels
+
+    - note that only one Bode input and Bode pair is allowed for each
+      :py:class:`plot_description` instance; if you want to create
+      multiple Bode plots from a single data file, you will need to
+      duplicate the plot description for each additional input/output
+      pair
+
+- optionally, at this point you could save the plot description using
+  the File>Save Plot Description (current) menu option.  This menu
+  choice calls the method :py:meth:`MyApp.on_save_current_pd` which
+  opens a dialog and then calls the method
+  :py:meth:`plot_description.create_xml` for the current plot
+  description (:py:attr:`MyApp.cur_plot_description)`.
+
+- add additional data files to the workspace as needed
+
+- specify different combinations of files to overlay on a plot
+
+  - this is done mainly be selecting which plot descriptions to
+    include on the current plot by selecting or deselecting their
+    names in the list box :py:attr:`MyApp.plot_name_list_box`
+  
+
+Autodoc Class and Method Documentation
+==========================================
+"""
 from __future__ import print_function
 
 # Used to guarantee to use at least Wx2.8
@@ -338,9 +406,28 @@ class figure_dialog(wx.Dialog):
         self.figure_name_ctrl = xrc.XRCCTRL(self, "figure_name_ctrl")
         self.figure_number_ctrl = xrc.XRCCTRL(self, "figure_number_ctrl")
 
+        self.figure_number_ctrl.Bind(wx.EVT_TEXT_ENTER, self.on_enter)
+
+        #self.Bind(wx.EVT_TEXT_ENTER, self.on_enter, self.figure_number_ctrl.GetId())
+        #self.text_Date.Bind(wx.EVT_TEXT_ENTER, self.text_Date_update , 
+        #self.text_Date) 
 
     def on_ok(self, event):
         self.EndModal(wx.ID_OK)
+
+
+    def on_enter(self, event):
+        name = self.figure_name_ctrl.GetValue()
+        fig_num_str = self.figure_number_ctrl.GetValue()
+
+        try:
+            fig_num = int(fig_num_str)
+            valid_num = True
+        except:
+            valid_num = False
+
+        if valid_num and name:
+            self.EndModal(wx.ID_OK)
 
 
     def on_cancel(self, event):
@@ -362,6 +449,7 @@ class figure_dialog(wx.Dialog):
         
     
 class MyApp(wx.App):
+    """I assume this goes at the top of the class autodocs."""
     def get_plot_description_ind(self, pd):
         items = self.plot_name_list_box.GetItems()
         key = pd.name
@@ -490,16 +578,21 @@ class MyApp(wx.App):
         
 
     def get_selected_plot_inds(self):
+        """Get the indices for the plot descriptions that are
+        currently selected in :py:attr:`MyApp.plot_name_list_box`"""
         all_items = self.plot_name_list_box.GetItems()
         inds = self.plot_name_list_box.GetSelections()
         return inds
 
+
     def clear_fig(self):
+        """Clear the plot figure"""
         fig = self.get_fig()
         fig.clf()
 
         
     def plot_all_td(self):
+        """Plot the time domain graphs for all selected plot descriptions"""
         self.clear_fig()
         inds = self.get_selected_plot_inds()
         if len(inds) > 0:
@@ -507,6 +600,7 @@ class MyApp(wx.App):
 
 
     def plot_all_bode(self):
+        """Plot the Bode plots for all selected plot descriptions"""
         self.clear_fig()
         inds = self.get_selected_plot_inds()
         if len(inds) > 0:
@@ -514,6 +608,8 @@ class MyApp(wx.App):
 
 
     def plot_bodes(self, inds):
+        """Plot the Bode plots for the plot descriptions corresponding
+        to inds"""
         self.plot_inds(inds, self.plot_bode)
         
         
@@ -645,7 +741,7 @@ class MyApp(wx.App):
 
 
     def add_plot_description(self, pd):
-        """This method consolidates everything needed to a plot
+        """This method consolidates everything needed to add a plot
         description to the GUI.  The intent is to use it when loading
         plot descriptions from xml files or when the GUI user loads a
         data file."""
@@ -739,7 +835,13 @@ class MyApp(wx.App):
         
     def on_add_file(self, event):
         """
-        Create and show the Open FileDialog
+        This is the method called when the user presses the Add File
+        button (self.add_file_button).  It shows a dialog that allows
+        the user to chose a text file (txt or csv).  As long as the
+        dialog returns wx.ID_OK, the text file is loaded by the method
+        :py:meth:`MyApp.load_data_file` which sets the attribute
+        :py:attr:`MyApp.cur_plot_description` and shows a preview of
+        the data in :py:attr:`MyApp.preview_grid`
         """
         #print('in on_add_file')
         filename = None
@@ -842,6 +944,8 @@ class MyApp(wx.App):
 
 
     def on_save_current_pd(self, event):
+        """Save the current plot description
+        (:py:attr:`MyApp.cur_plot_description`) as an XML file."""
         print('in on_save_current_pd')
 
         dlg = wx.FileDialog(self.frame, message="Save Plot Description as XML",
