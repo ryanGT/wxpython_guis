@@ -9,8 +9,12 @@ def my_file_dialog(parent=None, \
                    msg="Chose a file", default_file="", \
                    wildcard="All files (*.*)|*.*", \
                    kind="open", \
-                   check_overwrite=True):
+                   check_overwrite=False):
+    """This is a convienence class for showing a file dialog for
+    opening or saving a file.  kind can be either 'open' or 'save'.
 
+    If the user clicks OK, the full filepath is returned.  If the user
+    cancels the dialog, None is returned."""
     flags = wx.CHANGE_DIR
     
     if kind.lower() in ["open","load"]:

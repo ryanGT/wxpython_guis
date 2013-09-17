@@ -2,7 +2,7 @@ from __future__ import print_function
 
 # Used to guarantee to use at least Wx2.8
 #import wxversion
-#wxversion.ensureMinimal('2.8')
+#wxversion.ensureMinimal('2.8')#<-- you can only do this in top-level modules or scripts
 
 import sys, time, os, gc
 import matplotlib
@@ -20,7 +20,15 @@ import wx.grid
 
 
 class PlotPanel(wx.Panel):
+    """This example is from something I found on the matplotlib
+    webpage.  They combined an embedded mpl plot with the wxPython xrc
+    approach.  They basically create a wx.Panel placeholder in the xrc
+    file.  See data_vis_gui.py for an example of using this class.
 
+    Your really don't need anything other than the __init__ method.
+    After that, just grab :py:attr:`self.fig` and use the matplotlib
+    methods of the figure instance (the object-oriented API, not
+    pylab)."""
     def __init__(self, parent, fig_size=(8,6)):
         wx.Panel.__init__(self, parent, -1)
 
@@ -41,6 +49,7 @@ class PlotPanel(wx.Panel):
 
 
     def init_plot_data(self):
+        """This just creates the starting graph."""
         a = self.fig.add_subplot(111)
         t = np.arange(0,1,0.01)
         y = np.sin(2*np.pi*t)
@@ -50,6 +59,10 @@ class PlotPanel(wx.Panel):
 
 
     def change_plot(self):
+        """This is just a method to show I can update the plot from a
+        program.  It doesn't really do anything else useful.  It
+        serves as an example of clearing the axis, plotting something,
+        and refreshing the graph."""
         self.ax.clear()
         t = np.arange(0,1,0.01)
         y2 = np.cos(2*np.pi*t)
@@ -58,25 +71,15 @@ class PlotPanel(wx.Panel):
 
 
     def GetToolBar(self):
+        """This is from the example; I don't know what it does."""
         # You will need to override GetToolBar if you are using an
         # unmanaged toolbar in your frame
         return self.toolbar
 
-    ## def OnWhiz(self,evt):
-    ##     self.x += np.pi/15
-    ##     self.y += np.pi/20
-    ##     z = np.sin(self.x) + np.cos(self.y)
-    ##     self.im.set_array(z)
-
-    ##     zmax = np.amax(z) - ERR_TOL
-    ##     ymax_i, xmax_i = np.nonzero(z >= zmax)
-    ##     if self.im.origin == 'upper':
-    ##         ymax_i = z.shape[0]-ymax_i
-    ##     self.lines[0].set_data(xmax_i,ymax_i)
-
-    ##     self.canvas.draw()
 
     def onEraseBackground(self, evt):
+        """I don't know what this does either (based on the comment
+        below, I guess it prevents flicker)."""
         # this is supposed to prevent redraw flicker on some X servers...
         pass
 
