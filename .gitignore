@@ -4,4 +4,6 @@ data_vis_xrc_editted.xrc
 figure_name_dialog.xcfg
 helpme.xcfg
 helpme.xrc
-doc/
+doc/_build
+doc/_static
+doc/_templates
