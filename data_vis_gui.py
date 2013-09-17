@@ -126,6 +126,17 @@ Helper Classes
 
 
 
+To Do Items
+==================
+
+- It is not currently possible to load a data file that contains Bode
+  columns direcdtly, i.e. you cannot load frequency, dB magnitude and
+  phase from a data file; it is expected that you load a time domain
+  file and calculate the Bode parameters from the time domain data.
+  It should be made possible to load frequency, dB or linear
+  magnitude, and phase directly from a data file.
+
+- PhaseMassage is not currently supported
 
 Autodoc Class and Method Documentation
 ==========================================
@@ -571,8 +582,67 @@ class figure_dialog(wx.Dialog):
         
     
 class MyApp(wx.App):
-    """I assume this goes at the top of the class autodocs."""
+    """
+    Main methods:
+
+    - :py:meth:`MyApp.load_data_file` loads a data file, converts it to
+      a :py:class:`plot_description`, shows a preview of the data in
+      the wx.grid :py:attr:`MyApp.preview_grid`, adds the file
+      parameters to the text controls, ...
+
+    - :py:meth:`MyApp.on_set_as_fig_button` creates a
+      :py:class:`figure` instance based on the currently selected plot
+      description names and the results of the user input into the
+      :py:class:`figure_dialog`
+
+    - :py:meth:`MyApp.set_active_figure` sets the active figure for
+      the GUI based on an index ind that is passed in
+
+    - :py:meth:`MyApp.change_fig` is the method that is called
+      whenever the user chooses a Figure number to activate (from the
+      Figure menu or a hotkey).  The method determines which Figure
+      number to go to and then passes the ind to
+      :py:meth:`MyApp.set_active_figure`
+
+    - :py:meth:`MyApp._update_plot` is the background method called
+      whenever the GUI needs to redraw the plot.  It checks to see
+      whether the time domain or Bode tab of the notebook is selected
+      and then calls either :py:meth:`MyApp.plot_all_td` or
+      :py:meth:`MyApp.plot_all_bode`
+
+
+    - Plotting Methods:
+    
+      - :py:meth:`MyApp.plot_all_td` plots the time domain graph for
+        all selected plot_descriptions
+
+      - :py:meth:`MyApp.plot_td` plots a list of time domain
+        plot_descriptions given a list of inds (called by
+        :py:meth:`MyApp.plot_all_td`)
+
+      - :py:meth:`MyApp.plot_time_domain` plots one time domain
+        plot_description (called by :py:meth:`MyApp.plot_td`)
+
+      - :py:meth:`MyApp.plot_all_bode` plots the Bode plots for all
+        selected plot_descriptions
+
+      - :py:meth:`MyApp.plot_bodes` plot multiple Bode given a list of
+        inds
+
+      - :py:meth:`MyApp.plot_bode` plots one Bode plot (called by
+        :py:meth:`MyApp.plot_bodes` indirectly)
+
+      - :py:meth:`MyApp.plot_inds` is supposed to be used by both
+        :py:meth:`MyApp.plot_td` and :py:meth:`MyApp.plot_bodes` to
+        plot either time domain or Bode based on a list of inds.  I
+        think only :py:meth:`MyApp.plot_bodes` uses it currently.
+
+      
+      
+    """
     def get_plot_description_ind(self, pd):
+        """Find the ind of plot_description pd by looking for its name
+        in :py:attr:`self.plot_name_list_box`."""
         items = self.plot_name_list_box.GetItems()
         key = pd.name
         ind = items.index(key)
@@ -580,11 +650,17 @@ class MyApp(wx.App):
 
 
     def get_plot_description_inds(self, pd_list):
+        """Get a list of inds by calling
+        :py:meth:`MyApp.get_plot_description_ind` for each
+        plot_description in pd_list."""
         ind_list = [self.get_plot_description_ind(pd) for pd in pd_list]
         return ind_list
 
     
     def set_selected_plot_descriptions(self, pd_list):
+        """Deselect all the plot_descriptions in
+        :py:attr:`MyApp.plot_name_list_box` and then select only those
+        in pd_list."""
         self.plot_name_list_box.DeselectAll()
         ind_list = self.get_plot_description_inds(pd_list)
         for ind in ind_list:
@@ -593,6 +669,8 @@ class MyApp(wx.App):
 
 
     def find_fig_ind(self, fig_name):
+        """Search :py:attr:`MyApp.figure_list` to find one whose names
+        matches fig_name."""
         found = 0
         for i, fig in enumerate(self.figure_list):
             if fig.name == fig_name:
@@ -604,7 +682,10 @@ class MyApp(wx.App):
 
         
     def set_active_figure(self, ind):
-        print('in set_active_figure')
+        """Set the active figure to
+        :py:attr:`MyApp.figure_list[ind]`. This includes specifying
+        which plot_descriptions are active, setting whether the plot
+        is time domain or Bode, and then updating the plot."""
         self.active_fig = self.figure_list[ind]
         self.set_selected_plot_descriptions(self.active_fig.plot_descriptions)
 
@@ -618,6 +699,8 @@ class MyApp(wx.App):
 
 
     def on_switch_to_bode(self,event):
+        """Respond to the Switch to Bode hotkey or menu item and
+        switch to a Bode plot"""
         self.td_bode_notebook.SetSelection(1)
         #check for Bode readiness:
         inds = self.get_selected_plot_inds()
@@ -633,15 +716,22 @@ class MyApp(wx.App):
                 
 
     def on_switch_to_time_domain(self,event):
+        """Respond to the Switch to Time Domain hotkey or menu item
+        and switch to a time domain plot"""
         self.td_bode_notebook.SetSelection(0)
         self._update_plot()
         
         
     def change_fig(self, event):
+        """This is the method called whenever the user selects a
+        certain Figure number.  The method determines which Figure ind
+        to go to by searching :py:attr:`MyApp.figure_menu_ids` for the
+        id that matches the id of the event.
+        :py:meth:`MyApp.set_active_figure` is then called with that ind."""
         eid = event.GetId()
-        print('in change_fig, Id=%s' % eid)
+        #print('in change_fig, Id=%s' % eid)
         ind = self.figure_menu_ids.index(eid)
-        print('ind = %i' % ind)
+        #print('ind = %i' % ind)
         self.set_active_figure(ind)
         
         
@@ -663,7 +753,7 @@ class MyApp(wx.App):
 
     def plot_time_domain(self, plot_descript, clear=False, draw=True):
         """This is the underlying method for plotting one time domain
-        plot description"""
+        plot description."""
         fig = self.get_fig()
         if clear:
             fig.clf()
@@ -674,6 +764,10 @@ class MyApp(wx.App):
 
 
     def get_plot_description_from_ind(self, ind):
+        """Given the ind for a plot descrition (such as from a list of
+        selected plot_descriptions from an XML file), get the
+        :py:class:`plot_description` instance from
+        :py:attr:`MyApp.plot_dict`."""
         key = self.plot_list[ind]
         pd = self.plot_dict[key]
         return pd
@@ -691,6 +785,8 @@ class MyApp(wx.App):
 
         
     def plot_td(self, inds):
+        """Given a list of inds, plot the corresponding time domain
+        graph for each :py:class:`plot_description`."""
         self.plot_inds(inds, self.plot_time_domain)
         
 
@@ -731,6 +827,7 @@ class MyApp(wx.App):
         
         
     def plot_bode(self, plot_descript, clear=True, draw=True):
+        """This method plots one Bode plot for one plot_description"""
         fig = self.get_fig()
         if clear:
             fig.clf()
@@ -739,35 +836,44 @@ class MyApp(wx.App):
             self.plotpanel.canvas.draw()
 
 
-    def plot_cur_bode(self, clear=False):
-        self.plot_bode(self.cur_plot_description, clear=clear)
-
-
     def set_labels_ctrl(self):
+        """Set the value of :py:attr:`MyApp.label_text_ctrl` to the
+        comma delimited string from the labels of
+        :py:attr:`MyApp.cur_plot_description`"""
         label_str = self.cur_plot_description.create_lable_str()
         self.label_text_ctrl.SetValue(label_str)
 
 
     def set_legend_str(self):
+        """Set the value of :py:attr:`MyApp.legend_dict_ctrl` to the
+        string corresponing to the legend_dict of
+        :py:attr:`MyApp.cur_plot_description`"""
         legend_str = self.cur_plot_description.create_legend_str()
         self.legend_dict_ctrl.SetValue(legend_str)
 
 
     def get_label_str(self):
+        """Pull the label string out of
+        :py:attr:`MyApp.label_text_ctrl`"""
         return self.label_text_ctrl.GetValue()
 
 
     def get_legend_str(self):
+        """Pull the legend string out of
+        :py:attr:`MyApp.legend_dict_ctrl`"""
         return self.legend_dict_ctrl.GetValue()
 
 
     def parse_label_str(self):
+        """Convert a comma delimited label string back into a list of
+        labels"""
         label_list = self.get_label_str().split(',')
         plot_labels = [label.strip() for label in label_list]
         return plot_labels
 
 
     def parse_legend_str(self):
+        """Convert a legend dictionary string back into a dictionary"""
         legend_list = self.get_legend_str().split(',')
         legend_dict = {}
         
@@ -782,6 +888,13 @@ class MyApp(wx.App):
     
         
     def load_data_file(self, datapath, name=''):
+        """Load a data file from a txt or csv file and create a
+        :py:class:`plot_description` instance from it.  Set this
+        :py:attr:`plot_description` as
+        :py:attr:`MyApp.cur_plot_description.`
+
+        This method also puts loads the data from the datafile into
+        :py:attr:`MyApp.preview_grid.`"""
         self.cur_plot_description = plot_description(datapath, name)
         cpd = self.cur_plot_description
         print('shape = %s, %s' % cpd.data.shape)
@@ -790,8 +903,6 @@ class MyApp(wx.App):
         self.data = [cpd.labels] + cpd.data.tolist()
         self.table = MyGridTable(self.data)
         self.preview_grid.SetTable(self.table)
-        #self.plot_all_td()
-        #self.plot_cur_df()
 
 
     def _update_plot(self):
@@ -808,9 +919,11 @@ class MyApp(wx.App):
             
 
     def on_update_plot(self, event):
-        print('in on_update_plot')
+        """Respond to the Update Plot button or menu or hotkey.
+        Determine whether the active plot is time domain or Bode based
+        on the selected notebook tab and then refresh the plot after
+        reading the values out of the plot related text controls."""
         sel = self.td_bode_notebook.GetSelection()
-        print('sel = %s' % sel)
         #pdb.set_trace()
         if sel == 0:
             #time domain plot
@@ -820,7 +933,6 @@ class MyApp(wx.App):
             self.cur_plot_description.legend_dict = legend_dict
             legloc = int(self.legloc_ctrl.GetValue())
             self.cur_plot_description.legloc = legloc
-            #self.plot_cur_df()
             self.plot_all_td()
         elif sel == 1:
             #Bode plot
@@ -828,11 +940,13 @@ class MyApp(wx.App):
             output_str = self.bode_output_ctrl.GetValue()
             self.cur_plot_description.bode_input_str = input_str
             self.cur_plot_description.bode_output_str = output_str
-            #self.plot_cur_bode()
             self.plot_all_bode()
 
 
     def get_new_name(self):
+        """Create a new default starting name for a
+        :py:class:`plot_description` instance that is being added to
+        the GUI."""
         all_items = self.plot_name_list_box.GetItems()
         N_items = len(all_items)
         Q = N_items + 1
@@ -845,7 +959,8 @@ class MyApp(wx.App):
         that I initially allowed plot_description instances without
         names.  I regret that and am sort of fixing it.
 
-        Note that this method """
+        Note that this method sets :py:attr:`pd.name` if it is not
+        already set."""
         name = pd.name
         if (not name) or (name == 'None'):
             name = self.get_new_name()
@@ -873,6 +988,9 @@ class MyApp(wx.App):
         
 
     def add_name_to_list_box(self, plot_name):
+        """Append a new plot_name to
+        :py:attr:`MyApp.plot_name_list_box` and make sure the new name
+        is selected after adding it."""
         self.plot_name_list_box.Append(plot_name)
         all_items = self.plot_name_list_box.GetItems()
         N_items = len(all_items)
@@ -880,12 +998,20 @@ class MyApp(wx.App):
 
 
     def add_plot_description_to_backend(self, plot_desc):
+        """Add a new plot_description to the behind the scenes
+        attribute :py:attr:`MyApp.plot_dict` and add the name to
+        :py:attr:`MyApp.plot_list`"""
         name = self.get_pd_name(plot_desc)
         self.plot_dict[name] = plot_desc
         self.plot_list.append(name)
 
         
     def on_add_to_list_button(self, event):
+        """I am pretty sure this has been replace by the combination
+        of :py:attr:`MyApp.add_name_to_list_box` and
+        :py:attr:`MyApp.add_plot_description_to_backend`, but there
+        appear to be several places where this method is still being
+        called."""
         #FYI, this button no longer exists, but I still need the
         #method
         print('on_add_to_list_button')
@@ -900,12 +1026,19 @@ class MyApp(wx.App):
 
 
     def set_figure_menu_text(self, fig_name, fig_num):
+        """Set the text of the Figre menu item after the
+        :py:class:`figure_dialog` closes (which is opened by pressing
+        the Set as Figure button or menu item)."""
         ind = fig_num - 1
         text = 'Figure %i: %s' % (fig_num, fig_name)
         self.figure_menu_items[ind].SetText(text)
 
 
     def on_set_as_fig_button(self, event):
+        """Create a :py:class:`figure` instance based on the selected
+        :py:class:`plot_description` names in
+        :py:meth:`MyApp.plot_name_list_box` and the results of showing
+        the :py:class:`figure_dialog`."""
         dlg = figure_dialog(self.frame)
         if dlg.ShowModal() == wx.ID_OK:
             fig_name = dlg.figure_name_ctrl.GetValue()
@@ -988,10 +1121,17 @@ class MyApp(wx.App):
 
 
     def on_exit(self,event):
+        """Close the GUI"""
         self.frame.Close(True)  # Close the frame.    
 
 
     def on_change_plot_name(self, event):
+        """Change the name associated with a
+        :py:class:`plot_description` instance.  This method is called
+        when the user edits the name in
+        :py:attr:`MyApp.plot_name_ctrl`.  The new name is transfered
+        to :py:attr:`MyApp.plot_name_list_box` and the key in
+        :py:attr:`MyApp.plot_dict` is also changed."""
         #inds = self.plot_name_list_box.GetSelections()
         #ind = inds[0]
         #key = self.plot_name_list_box.GetString(ind)
@@ -1009,10 +1149,16 @@ class MyApp(wx.App):
 
 
     def on_plot_name_get_focus(self, event):
+        """Store the name in :py:attr:`MyApp.plot_name_ctrl` before
+        the user edits it.  This is done to find the corresponding key
+        for :py:attr:`MyApp.plot_dict` and
+        :py:attr:`MyApp.plot_name_list_box` after the name is changed."""
         self.old_name = self.plot_name_ctrl.GetValue()
 
 
     def plot_parameters_to_gui(self, plot_description):
+        """Transfer the parameters of plot_description to the
+        corresponding GUI text controls."""
         label_str = plot_description.create_lable_str()
         self.label_text_ctrl.SetValue(label_str)
         legend_str = plot_description.create_legend_str()
@@ -1034,6 +1180,10 @@ class MyApp(wx.App):
         
         
     def on_plot_list_box_select(self, event):
+        """When the user selects the name of only one plot_description
+        in :py:attr:`MyApp.plot_name_list_box`, load the parameters
+        from the plot_description into the corresponding text
+        contorls."""
         inds = self.plot_name_list_box.GetSelections()
         #pdb.set_trace()
         if len(inds) == 1:
@@ -1046,7 +1196,10 @@ class MyApp(wx.App):
             
 
     def on_duplicate_button(self, event):
-        print('in on_duplicate_button')
+        """Duplicate one plot description and add the copy to
+        :py:attr:`MyApp.plot_name_list_box` and
+        :py:attr:`MyApp.plot_dict`.  This is done so that multiple
+        Bode plots can be easily created from one data file."""
         key = self.plot_name_ctrl.GetValue()
         pd = self.plot_dict[key]
         new_pd = copy.copy(pd)
@@ -1083,7 +1236,7 @@ class MyApp(wx.App):
 
 
     def on_save_figure(self, event):
-        print('in on_save_figure')
+        """Save the active figure to an XML file"""
         if not hasattr(self, 'active_fig'):
             print('no active_fig, leaving')
             #warn here? warning dialog?
@@ -1108,7 +1261,7 @@ class MyApp(wx.App):
 
 
     def on_save_gui_state(self, event):
-        print('in on_save_gui_state')
+        """Save the entire GUI state to an XML file"""
         xml_path = wx_utils.my_file_dialog(parent=self.frame, \
                                            msg="Save GUI state as", \
                                            kind="save", \
@@ -1160,7 +1313,7 @@ class MyApp(wx.App):
 
 
     def on_load_gui_state(self, event):
-        print('in on_load_gui_state')
+        """Load and reset the GUI state from an XML file"""
         xml_path = wx_utils.my_file_dialog(parent=self.frame, \
                                            msg="Load GUI state from XML", \
                                            kind="open", \
@@ -1212,6 +1365,9 @@ class MyApp(wx.App):
 
 
     def find_empty_figure(self):
+        """Find the first empty figure in :py:attr:`MyApp.figure_list`
+        and return its index ind.  If no empty spot is found in the
+        list, append one and return its index."""
         #if there is a spot in self.figure_list that contains None,
         #find the first one of those.  If there aren't any, append
         #None and return the ind of the new None
@@ -1230,6 +1386,7 @@ class MyApp(wx.App):
 
         
     def on_load_figure(self, event):
+        """Load one figure from an XML file"""
         #What does it mean to load a Figure?
         # - add the plot descriptions (if they are not already there)
         # - add figure name to the figure menu
@@ -1259,14 +1416,16 @@ class MyApp(wx.App):
 
         
     def set_current_plot_descrition(self, pd):
+        """Set the current plot description
+        :py:attr:`MyApp.cur_plot_description` to pd"""
         self.plot_parameters_to_gui(pd)
         self.cur_plot_description = pd
         
         
     def on_load_plot_descriptions(self, event):
-        print('in on_load_plot_descriptions')
+        """Load a list of plot_descriptions from an XML file"""
         xml_path = wx_utils.my_file_dialog(parent=self.frame, \
-                                           msg="Chose an XML file", \
+                                           msg="Chose a plot_description XML file", \
                                            default_file="", \
                                            wildcard=xml_wildcard)
         if xml_path:
@@ -1285,6 +1444,8 @@ class MyApp(wx.App):
 
         
     def OnInit(self):
+        """Initialize the :py:class:`MyApp` instance; start by loading
+        the xrc resource file and then add other stuff and bind the events"""
         #xrcfile = cbook.get_sample_data('ryans_first_xrc.xrc', asfileobj=False)
         xrcfile = 'data_vis_xrc.xrc'
         #xrcfile = 'data_vis_xrc_broken.xrc'
