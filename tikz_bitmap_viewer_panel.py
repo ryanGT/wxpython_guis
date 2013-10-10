@@ -6,7 +6,7 @@ from __future__ import print_function
 
 use_pdfviewer = False
 
-import os
+import os, copy
 
 #import sys, time, os, gc
 
@@ -15,12 +15,61 @@ import wx.xrc as xrc
 
 #import wx.grid
 #import wx.grid as  gridlib
+import numpy as np
 
 import block_diagram_utils
 from block_diagram_utils import panel_with_blocklist, change_ext
 
+import xml_utils
+
 xrc_folder = '/Users/rkrauss/git/wxpython_guis/'
 xrc_path = os.path.join(xrc_folder, 'tikz_bitmap_viewer_xrc.xrc')
+
+tikz_type_map = {'arbitrary_input':'input', \
+                'finite_width_pulse':'input', \
+                'step_input':'input', \
+                'summing_block':'sum', \
+                'swept_sine':'input', \
+                }
+
+
+simple_wire_fmt = '\\draw [->] (%s) -- (%s);'
+complex_wire_fmt = '\\draw [->] (%s) %s (%s);'
+
+
+tikz_header = r"""\input{/Users/rkrauss/git/report_generation/drawing_header}
+\def \springlength {2.0cm}
+\pgfmathparse{\springlength*3}
+\let\damperlength\pgfmathresult
+\def \groundX {0.0cm}
+\def \groundwidth {4cm}
+\def \masswidth {2.5cm}
+\pgfmathparse{\masswidth/2}
+\let\halfmasswidth\pgfmathresult
+\def \wallwidth {0.35cm}
+\pgfmathparse{\wallwidth/2}
+\let\halfwallwidth\pgfmathresult
+\pgfmathparse{\masswidth+0.7cm}
+\let\wallheight\pgfmathresult
+\def \mylabelshift {0.2cm}
+
+\usetikzlibrary{shapes,arrows}
+\tikzstyle{block} = [draw, fill=blue!10, rectangle, 
+    minimum height=1.0cm, minimum width=1.0cm]
+\tikzstyle{multilineblock} = [draw, fill=blue!10, rectangle, 
+    minimum height=1.25cm, minimum width=1.0cm, 
+    text width=2cm,text centered,midway]
+\tikzstyle{sum} = [draw, fill=blue!20, circle, node distance=1.5cm]
+\tikzstyle{input} = [emptynode]%[coordinate]
+\tikzstyle{output} = [emptynode]
+\tikzstyle{myarrow} = [coordinate, node distance=1.5cm]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+\tikzstyle{serialnode} = [inner sep=0.5mm,rectangle,draw=black, fill=black]
+\tikzstyle{serialline} = [draw, ->, ultra thick, densely dashed]
+\tikzstyle{mylabel} = [emptynode, yshift=\mylabelshift]
+
+"""
+
 
 class tikz_panel(wx.Panel, panel_with_blocklist):
     def get_filename(self):
@@ -89,7 +138,7 @@ class tikz_panel(wx.Panel, panel_with_blocklist):
             #blocks are correctly sorted
             self.blocklist = sorted_blocks
             #!#!#: sort the blocks in the list box here
-            self.sort_list_box()
+            #self.sort_list_box()
 
 
         for block in self.blocklist:
@@ -398,7 +447,7 @@ class tikz_panel(wx.Panel, panel_with_blocklist):
     def on_update_diagram(self, event=0):
         #w, h = self.static_bitmap.Size
         #print('bitmap size: %s, %s' % (w,h))
-        wp, hp = self.diagram_panel.Size
+        wp, hp = self.Size
 
         if hasattr(self, 'tex_path'):
             tex_path = self.tex_path
@@ -475,7 +524,7 @@ class tikz_panel(wx.Panel, panel_with_blocklist):
                 self.static_bitmap.SetBitmap(wx.BitmapFromImage(Img))
                 os.chdir(curdir)
 
-            self.frame.Refresh()
+            self.Refresh()
 
 
     def on_load_xml(self, event):
@@ -484,8 +533,9 @@ class tikz_panel(wx.Panel, panel_with_blocklist):
             print('in on_load_xml, ready to go')
         
 
-    def on_update_diagram_button(self, event=0):
-        print('in on_update_diagram_button')
+    ## def on_update_diagram_button(self, event=0):
+    ##     print('in on_update_diagram_button')
+    ##     self.on_update_diagram(event)
             
 
     def __init__(self, parent):
@@ -493,7 +543,7 @@ class tikz_panel(wx.Panel, panel_with_blocklist):
         res = xrc.XmlResource(xrc_path)
         res.LoadOnPanel(pre, parent, "tikz_viewer_panel") 
         self.PostCreate(pre)
-        self.Bind(wx.EVT_BUTTON, self.on_update_diagram_button, \
+        self.Bind(wx.EVT_BUTTON, self.on_update_diagram, \
                   xrc.XRCCTRL(self, "update_diagram_button")) 
-
+        self.static_bitmap = xrc.XRCCTRL(self, "static_bitmap")
 
