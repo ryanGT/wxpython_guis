@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<resource class="wxStaticBitmap">
+  <object class="wxPanel" name="tikz_viewer_panel">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <rows>2</rows>
+      <vgap>5</vgap>
+      <hgap>5</hgap>
+      <growablecols>0</growablecols>
+      <growablerows>0</growablerows>
+      <object class="sizeritem">
+        <object class="wxStaticBitmap" name="static_bitmap"/>
+        <option>1</option>
+        <flag>wxALL|wxGROW</flag>
+        <border>5</border>
+        <minsize>800,600</minsize>
+      </object>
+      <object class="sizeritem">
+        <object class="wxButton" name="update_diagram_button">
+          <label>Update Diagram</label>
+        </object>
+        <flag>wxALL|wxALIGN_RIGHT</flag>
+        <border>5</border>
+      </object>
+    </object>
+  </object>
+</resource>
