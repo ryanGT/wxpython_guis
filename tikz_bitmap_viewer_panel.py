@@ -31,7 +31,9 @@ from block_diagram_utils import panel_with_parent_blocklist, change_ext
 import xml_utils
 
 xrc_folder = '/Users/rkrauss/git/wxpython_guis/'
-xrc_path = os.path.join(xrc_folder, 'tikz_bitmap_viewer_xrc.xrc')
+#filename = 'tikz_bitmap_viewer_xrc.xrc'
+filename = 'tikz_bitmap_viewer_xrc2.xrc'
+xrc_path = os.path.join(xrc_folder, filename)
 
 tikz_type_map = {'arbitrary_input':'input', \
                 'finite_width_pulse':'input', \
@@ -552,8 +554,8 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         res.LoadOnPanel(pre, parent, "tikz_viewer_panel") 
         self.PostCreate(pre)
         self.parent = parent
-        self.Bind(wx.EVT_BUTTON, self.on_update_diagram, \
-                  xrc.XRCCTRL(self, "update_diagram_button")) 
+        ## self.Bind(wx.EVT_BUTTON, self.on_update_diagram, \
+        ##           xrc.XRCCTRL(self, "update_diagram_button")) 
         self.static_bitmap = xrc.XRCCTRL(self, "static_bitmap")
         assert hasattr(self.parent, 'blocklist'), \
                "The parent of a tikz_viewer_panel must have a blocklist attribute."
