@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<resource class="wxPanel">
+  <object class="wxPanel" name="params_grid_panel">
+    <object class="wxFlexGridSizer">
+      <cols>3</cols>
+      <rows>1</rows>
+      <vgap>5</vgap>
+      <hgap>5</hgap>
+      <growablecols>0</growablecols>
+      <growablerows>0</growablerows>
+      <object class="sizeritem">
+         <object class="wxGrid" name="params_grid">
+           <size>500,200</size>
+         </object>
+         <option>1</option>
+         <flag>wxEXPAND</flag>
+       </object>
+       <object class="sizeritem">
+         <object class="wxStaticLine">
+           <style>wxLI_VERTICAL</style>
+         </object>
+       </object>
+       <object class="sizeritem">
+         <object class="wxBoxSizer">
+           <object class="sizeritem">
+             <object class="wxStaticText">
+               <label>Element List</label>
+             </object>
+             <flag>wxTOP</flag>
+             <border>5</border>
+           </object>
+           <object class="sizeritem">
+             <object class="wxListBox" name="block_list_box">
+               <size>200,200</size>
+             </object>
+             <option>1</option>
+             <flag>wxBOTTOM|wxEXPAND</flag>
+             <border>5</border>
+             <minsize>200,200</minsize>
+           </object>
+       </object>
+    </object>
+  </object>
+</resource>

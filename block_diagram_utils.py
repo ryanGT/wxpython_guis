@@ -14,14 +14,19 @@ def change_ext(pathin, new_ext):
     return newpath
 
 
-class panel_with_blocklist(object):
+class panel_with_parent_blocklist(object):
     """This is designed to be a mixin class for any part of a block
     diagram system that would have a blocklist parameter, such as a
-    tikz viewer or a block parameters viewer/editor panel"""
+    tikz viewer or a block parameters viewer/editor panel.  This gets
+    tricky if different modular panels will each need access to the
+    blocklist, so I am forcing the element to use
+    self.parent.blocklist.  This will be slightly tricky, but will
+    prevent modifying one panels blocklist and the others not getting
+    modified."""
     def find_abs_blocks(self):
         abs_inds = []
 
-        for i, block in enumerate(self.blocklist):
+        for i, block in enumerate(self.parent.blocklist):
             if block.params['position_type'] == 'absolute':
                 abs_inds.append(i)
 
@@ -29,7 +34,7 @@ class panel_with_blocklist(object):
 
 
     def find_block(self, block_name):
-        for block in self.blocklist:
+        for block in self.parent.blocklist:
             if block.name == block_name:
                 return block
 
@@ -38,7 +43,7 @@ class panel_with_blocklist(object):
         new_block = bd_XML_element(name=name, \
                                    blocktype=blocktype, \
                                    params=params_dict)
-        self.blocklist.append(new_block)
+        self.parent.blocklist.append(new_block)
 
 
     def on_load_xml(self, event=0):
@@ -53,14 +58,11 @@ class panel_with_blocklist(object):
             myparser = block_diagram_system_parser(xml_path)
             myparser.parse()
             myparser.convert()
-            self.blocklist = []
+            self.parent.blocklist = []
             for block in myparser.block_list:
                 print('block.params = %s' % block.params)
                 self.append_one_block(block.name, block.blocktype, block.params)
 
             self.xml_path = xml_path
-
-            if hasattr(self, 'parent') and hasattr(self.parent, 'blocklist'):
-                self.parent.blocklist = self.blocklist
 
             return self.xml_path
