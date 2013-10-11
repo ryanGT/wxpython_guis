@@ -14,7 +14,7 @@ from __future__ import print_function
 
 use_pdfviewer = False
 
-import os, copy
+import os, copy, rwkos
 
 #import sys, time, os, gc
 
@@ -30,7 +30,7 @@ from block_diagram_utils import panel_with_parent_blocklist, change_ext
 
 import xml_utils
 
-xrc_folder = '/Users/rkrauss/git/wxpython_guis/'
+xrc_folder = rwkos.FindFullPath('git/wxpython_guis')
 #filename = 'tikz_bitmap_viewer_xrc.xrc'
 filename = 'tikz_bitmap_viewer_xrc2.xrc'
 xrc_path = os.path.join(xrc_folder, filename)
