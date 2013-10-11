@@ -2,7 +2,7 @@
 an xml description of a system.  This block diagrams are converted to
 jpegs and place on a static bitmap.
 
-Note that I am using self.parent.blocklist to prevent a toplevel
+Note that I am using self.bd_parent.blocklist to prevent a toplevel
 application from having multiple blocklists for each panel and having
 them get out of sync."""
 
@@ -401,7 +401,7 @@ class params_grid_and_listbox_panel(wx.Panel, panel_with_parent_blocklist):
         #     since the dialog won't be allowed to edit the blocklist, I think it will be
         #     ok.
         params_dict = self.build_params_dict()
-        self.parent.blocklist[index].params.update(params_dict)#<-- updating rather than overwriting/assigning
+        self.bd_parent.blocklist[index].params.update(params_dict)#<-- updating rather than overwriting/assigning
                                                                #    will help if some parameters are hidden
                                                                #    (i.e. not showing the tikz params or something)
             
@@ -413,7 +413,7 @@ class params_grid_and_listbox_panel(wx.Panel, panel_with_parent_blocklist):
         curname = self.block_list_box.GetStringSelection()
         index = self.block_list_box.GetSelection()
         print('curname = %s, index = %i' % (curname, index))
-        elem = self.parent.blocklist[index]
+        elem = self.bd_parent.blocklist[index]
         #self.new_block_name_box.SetValue(elem.name)#<-- if you wanted to be able to edit the name of a block, what would you do?
         #                                                 - what about just putting block name as the first parameter
         #                                                    - it could be just a little bit of hassle to handle this well
@@ -423,24 +423,25 @@ class params_grid_and_listbox_panel(wx.Panel, panel_with_parent_blocklist):
         
 
     def sort_list_box(self):
-        for i, block in enumerate(self.parent.blocklist):
+        for i, block in enumerate(self.bd_parent.blocklist):
             self.block_list_box.SetString(i, block.name)
 
 
     def reset_list_box(self):
          self.block_list_box.Clear()
 
-         for block in self.parent.blocklist:
+         for block in self.bd_parent.blocklist:
              self.block_list_box.Append(block.name)
              
   
-    def __init__(self, parent):
+    def __init__(self, parent, bd_parent):
         pre = wx.PrePanel()
         res = xrc.XmlResource(xrc_path)
         res.LoadOnPanel(pre, parent, "params_grid_panel") 
         self.PostCreate(pre)
         self.parent = parent
-        assert hasattr(self.parent, 'blocklist'), \
+        self.bd_parent = bd_parent
+        assert hasattr(self.bd_parent, 'blocklist'), \
                "The parent of a tikz_viewer_panel must have a blocklist attribute."
 
         self.params_grid = xrc.XRCCTRL(self,"params_grid")

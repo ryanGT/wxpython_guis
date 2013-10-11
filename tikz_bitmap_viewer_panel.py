@@ -2,7 +2,7 @@
 an xml description of a system.  This block diagrams are converted to
 jpegs and place on a static bitmap.
 
-Note that I am using self.parent.blocklist to prevent a toplevel
+Note that I am using self.bd_parent.blocklist to prevent a toplevel
 application from having multiple blocklists for each panel and having
 them get out of sync."""
 
@@ -104,20 +104,20 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         (first up or down, then over or vice versa).
 
         Note that you must call block.set_params_as_attrs() for each
-        block in self.parent.blocklist before calling this method."""
+        block in self.bd_parent.blocklist before calling this method."""
         #first, find the abs block and make sure there is only one
         abs_inds = self.find_abs_blocks()
-        assert len(abs_inds) > 0, "did not find any absolute blocks in self.parent.blocklist"
-        assert len(abs_inds) == 1, "found more than one absolute blocks in self.parent.blocklist"
+        assert len(abs_inds) > 0, "did not find any absolute blocks in self.bd_parent.blocklist"
+        assert len(abs_inds) == 1, "found more than one absolute blocks in self.bd_parent.blocklist"
 
         #I want to be able to undo this if I need to
-        backup_list = copy.copy(self.parent.blocklist)
+        backup_list = copy.copy(self.bd_parent.blocklist)
 
 
-        abs_block = self.parent.blocklist.pop(abs_inds[0])
+        abs_block = self.bd_parent.blocklist.pop(abs_inds[0])
         sorted_blocks = [abs_block]
 
-        relative_list = [block.params['relative_block'] for block in self.parent.blocklist]
+        relative_list = [block.params['relative_block'] for block in self.bd_parent.blocklist]
 
         #now,how to do the sortin?
         #
@@ -133,25 +133,25 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
             try:
                 next_index = relative_list.index(curname)
                 relative_list.pop(next_index)
-                curblock = self.parent.blocklist.pop(next_index)
+                curblock = self.bd_parent.blocklist.pop(next_index)
                 sorted_blocks.append(curblock)
             except ValueError:
                 i += 1
 
 
-        if len(self.parent.blocklist) > 0:
+        if len(self.bd_parent.blocklist) > 0:
             #sorting failed
-            self.parent.blocklist = backup_list
+            self.bd_parent.blocklist = backup_list
             print('sorting failed')
             return
         else:
             #blocks are correctly sorted
-            self.parent.blocklist = sorted_blocks
+            self.bd_parent.blocklist = sorted_blocks
             #!#!#: sort the blocks in the list box here
             #self.sort_list_box()
 
 
-        for block in self.parent.blocklist:
+        for block in self.bd_parent.blocklist:
             #block.set_params_as_attrs()#<--- this should be done before calling this method
             if block.params['position_type'] == 'absolute':
                 coords_str = block.params['abs_coordinates']
@@ -189,7 +189,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         rel_node_pat = '\\node [%s] (%s) {%s};'#type, relative direction, relative block, \
             #node distance, name, label
 
-        for block in self.parent.blocklist:
+        for block in self.bd_parent.blocklist:
             blocktype = block.blocktype
             label = block.params['label']
             print('label = ' +str(label))
@@ -239,7 +239,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         mylines = ['%output lines/arrows']
         out = mylines.append
 
-        for block in self.parent.blocklist:
+        for block in self.bd_parent.blocklist:
             if block.params.has_key('show_outputs'):
                 show_outputs = block.params['show_outputs']
                 if type(show_outputs) == str:
@@ -348,7 +348,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
                   r"\begin{tikzpicture}[every node/.style={font=\large}, node distance=2.5cm,>=latex']", \
                   ]
 
-        for block in self.parent.blocklist:
+        for block in self.bd_parent.blocklist:
             block.set_params_as_attrs()
 
         #estimate block coordinates for tricky wires and to get the
@@ -385,7 +385,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
 
 
         first = 1
-        for block in self.parent.blocklist:
+        for block in self.bd_parent.blocklist:
             if block.params.has_key('input') and block.params['input']:
                 #the block has an input and should get some kind of wire
                 in_node = self.find_input_node(block)
@@ -548,14 +548,23 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
     ##     self.on_update_diagram(event)
             
 
-    def __init__(self, parent):
+    def __init__(self, parent, bd_parent):
+        """I am trying to deal with the idea that a modular block
+        diagram GUI still needs to have only one blocklist that every
+        panel can access.  My approach is to have the parent
+        application contain the blocklist.  The problem is that in the
+        wxPython GUI since, the parent of a panel might be another
+        panel or a notebook or whatever.  So, bd_parent is my own
+        paramenter that refers to the block diagram parent,
+        i.e. whatever contains the actual blocklist."""
         pre = wx.PrePanel()
         res = xrc.XmlResource(xrc_path)
         res.LoadOnPanel(pre, parent, "tikz_viewer_panel") 
         self.PostCreate(pre)
         self.parent = parent
+        self.bd_parent = bd_parent
         ## self.Bind(wx.EVT_BUTTON, self.on_update_diagram, \
         ##           xrc.XRCCTRL(self, "update_diagram_button")) 
         self.static_bitmap = xrc.XRCCTRL(self, "static_bitmap")
-        assert hasattr(self.parent, 'blocklist'), \
+        assert hasattr(self.bd_parent, 'blocklist'), \
                "The parent of a tikz_viewer_panel must have a blocklist attribute."
