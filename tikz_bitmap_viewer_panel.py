@@ -540,6 +540,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
     def on_load_xml(self, event):
         xml_path = panel_with_parent_blocklist.on_load_xml(self, event)
         if xml_path:
+            self.xml_path = xml_path
             self.on_update_diagram(event)
         
 
