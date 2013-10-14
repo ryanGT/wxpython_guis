@@ -47,7 +47,7 @@ simple_wire_fmt = '\\draw [->] (%s) -- (%s);'
 complex_wire_fmt = '\\draw [->] (%s) %s (%s);'
 
 
-tikz_header = r"""\input{/Users/rkrauss/git/report_generation/drawing_header}
+tikz_header = r"""\input{drawing_header}
 \def \springlength {2.0cm}
 \pgfmathparse{\springlength*3}
 \let\damperlength\pgfmathresult
