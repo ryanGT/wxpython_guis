@@ -16,18 +16,20 @@ from panel_with_params_grid import panel_with_params_grid
 import block_diagram_xml
 import xml_utils
 
+import pdb
+
 xrc_folder = rwkos.FindFullPath('git/wxpython_guis')
 filename = 'input_params_xrc.xrc'
 xrc_path = os.path.join(xrc_folder, filename)
 
 
-input_dict = {'arbitrary_input':[], \
-              'finite_width_pulse':['t_on','t_off','amp'], \
+input_dict = {'finite_width_pulse':['t_on','t_off','amp'], \
               'step_input':['t_on','amp'], \
-              'swept_sine':['fmin','fmax','tspan','deadtime','amp'], \
+              'swept_sine':['fmin','fmax','deadtime','amp'], \
               }
 
-common_params = ['max_T']
+common_params = ['max_T']#<---- should swept_sine have a max_T rather than tspan? (just get rid of tspan?)
+defaults_dict = {'max_T':2.0, 't_on':0.1, 'amp':100}
 
 for key, val in input_dict.iteritems():
     val.extend(common_params)
@@ -38,11 +40,43 @@ for key, val in input_dict.iteritems():
 sorted_inputs = sorted(input_dict.iterkeys())
 
 
+def validate_dict(dict_in):
+    all_good = True
+    for key, val in dict_in.iteritems():
+        if (val is None) or (val == ''):
+            all_good = False
+            wx.MessageBox('Empty value for parameter %s' % key)
+
+    return all_good
+        
+            
 class input_params_panel(panel_with_params_grid):
+    def _set_params(self, case='step_input'):
+        key = case
+        params_list = input_dict[key]
+        N = len(params_list)
+        defaults = [None]*N
+        starting_dict = dict(zip(params_list, defaults))
+
+        starting_dict.update(defaults_dict)
+        self.display_params(starting_dict)
+
+        
     def on_input_choice(self, event=0):
         print('in on_input_choice')
-        key = 
+        key = self.input_choice.GetStringSelection()
+        self._set_params(key)
 
+
+    def get_input_params(self):
+        case = self.input_choice.GetStringSelection()
+        mydict = self.build_params_dict()
+        exit_status = validate_dict(mydict)
+        if not exit_status:
+            return case, None
+        else:
+            return case, mydict
+    
         
     def __init__(self, parent):
         pre = wx.PrePanel()
@@ -56,3 +90,11 @@ class input_params_panel(panel_with_params_grid):
         self.input_choice.SetItems(sorted_inputs)
         wx.EVT_CHOICE(self.input_choice, self.input_choice.GetId(),
                       self.on_input_choice)
+
+        self.params_grid = xrc.XRCCTRL(self, "params_grid")
+        self.params_grid.CreateGrid(20,2)
+        starting_case = 'step_input'
+        index = sorted_inputs.index(starting_case)
+        self.input_choice.Select(index)
+        self._set_params(case=starting_case)
+        

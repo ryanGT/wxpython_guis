@@ -1,3 +1,9 @@
+import wx
+import wx.xrc as xrc
+
+import wx.grid
+
+
 max_rows_default = 20
 
 class panel_with_params_grid(wx.Panel):
@@ -7,6 +13,7 @@ class panel_with_params_grid(wx.Panel):
     def clear_params_grid(self):
         self.params_grid.SetCellValue(0,0, "parameter")
         self.params_grid.SetCellValue(0,1, "value")
+        max_rows = self._get_max_rows()
         for i in range(1,max_rows):
             self.params_grid.SetCellValue(i,0, "")
             self.params_grid.SetCellValue(i,1, "")

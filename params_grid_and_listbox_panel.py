@@ -74,9 +74,9 @@ tikz_opts = ['position_type','show_outputs','tikz_block_options'] + \
 sorted_blocks = sorted(block_params.iterkeys())
 
 
-class params_grid_and_listbox_panel(wx.Panel, \
-                                    panel_with_parent_blocklist, \
-                                    panel_with_params_grid):
+class params_grid_and_listbox_panel(panel_with_params_grid, \
+                                    wx.Panel, \
+                                    panel_with_parent_blocklist):
     ## def set_param_labels(self):
     ##     self.clear_params_grid()
     ##     key = self.get_new_block_type()
