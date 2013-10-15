@@ -27,6 +27,32 @@
             </object>
             <object class="sizeritem">
               <object class="wxBoxSizer">
+                <orient>wxHORIZONTAL</orient>
+                <object class="sizeritem">
+                  <object class="wxStaticText" name="legend_loc_label">
+                    <label>Legend Location:</label>
+                  </object>
+                  <flag>wxTOP|wxBOTTOM|wxLEFT|wxALIGN_RIGHT</flag>
+                  <border>5</border>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxTextCtrl" name="legloc_textctrl">
+                    <value>1</value>
+                  </object>
+                  <flag>wxTOP|wxBOTTOM|wxRIGHT</flag>
+                  <border>5</border>
+                </object>
+              </object>
+            </object>
+            <object class="sizeritem">
+              <object class="wxButton" name="refresh_button">
+                <label>Refresh Plot</label>
+              </object>
+              <flag>wxALL|wxALIGN_CENTRE</flag>
+              <border>5</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxBoxSizer">
                 <object class="sizeritem">
                   <object class="wxStaticText" name="notes">
                     <label>Note: right click to add or delete signals.  Block refers to the name of the blocks on the block diagram.  Label refers to the label that will be put in the plot legend.  Index refers to which column to plot for a block with more than one output.</label>
@@ -41,7 +67,7 @@
               <flag>wxEXPAND</flag>
             </object>
             <cols>1</cols>
-            <rows>3</rows>
+            <rows>5</rows>
             <growablecols>0</growablecols>
             <growablerows>1</growablerows>
           </object>

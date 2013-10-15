@@ -93,7 +93,7 @@ pp_xrc_path = os.path.join(xrc_folder, pp_filename)
 
 
 class plot_panel_with_bd_side_panel(wx.Panel):
-    def __init__(self, parent):
+    def __init__(self, parent, bd_parent):
         """I am trying to deal with the idea that a modular block
         diagram GUI still needs to have only one blocklist that every
         panel can access.  My approach is to have the parent
@@ -122,5 +122,8 @@ class plot_panel_with_bd_side_panel(wx.Panel):
         self.signals_grid.SetColLabelValue(1,'Label')
         self.signals_grid.SetColLabelValue(2,'Index')
 
+        self.bd_parent = bd_parent
+        assert hasattr(self.bd_parent, 'blocklist'), \
+               "The parent of a tikz_viewer_panel must have a blocklist attribute"       
 
 
