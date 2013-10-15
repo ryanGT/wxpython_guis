@@ -91,8 +91,24 @@ xrc_folder = rwkos.FindFullPath('git/wxpython_guis')
 pp_filename = 'plot_panel_with_bd_side_panel.xrc'
 pp_xrc_path = os.path.join(xrc_folder, pp_filename)
 
+max_rows = 30
 
 class plot_panel_with_bd_side_panel(wx.Panel):
+    def get_first_empty_row(self):
+        for i in range(max_rows):
+            val = self.signals_grid.GetCellValue(i,0)
+            if not val:
+                return i
+
+        
+    def clear_grid(self):
+        stop_row = self.get_first_empty_row()
+        for i in range(stop_row):
+            for j in range(3):
+                self.signals_grid.SetCellValue(i,j,'')
+            
+            
+        
     def on_refresh_plot(self, event):
         legloc = int(self.legloc_textctrl.GetValue())
         mylist = self.get_plot_list()
@@ -105,6 +121,22 @@ class plot_panel_with_bd_side_panel(wx.Panel):
         #wx.MessageBox("You selected item '%s'" % text)
         self.popup_choice = text
 
+
+    def set_signals_info(self, mylist):
+        """Set the info in self.signals_grid.  Each row in mylist list
+        should contain a list or tuple of 2 or 3 elements.  The first
+        element must be the block name and the second element must be
+        the label for the legend for that signal.  The optional third
+        column is the output column index which will default to an
+        empty string if it is missing."""
+        self.clear_grid()
+        
+        for i, row in enumerate(mylist):
+            self.signals_grid.SetCellValue(i, 0, row[0])
+            self.signals_grid.SetCellValue(i, 1, row[1])
+            if len(row) > 2:
+                self.signals_grid.SetCellValue(i, 2, row[2])
+            
 
     def create_popup_menu(self, include_delete=False):
         self.popupmenu = wx.Menu()
@@ -157,8 +189,6 @@ class plot_panel_with_bd_side_panel(wx.Panel):
         name of the block, the second is the column index, and the
         third is the label.  Do this for each row in self.signals_grid"""
         mylist = []
-
-        max_rows = 30
 
         for i in range(max_rows):
             block_name = self.signals_grid.GetCellValue(i,0)
