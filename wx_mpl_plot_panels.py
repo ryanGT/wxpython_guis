@@ -93,6 +93,95 @@ pp_xrc_path = os.path.join(xrc_folder, pp_filename)
 
 
 class plot_panel_with_bd_side_panel(wx.Panel):
+    def on_refresh_plot(self, event):
+        legloc = int(self.legloc_textctrl.GetValue())
+        mylist = self.get_plot_list()
+        self.parent.plot_results(mylist, clear=True, legloc=legloc)
+
+
+    def on_popup_item_selected(self, event):
+        item = self.popupmenu.FindItemById(event.GetId())
+        text = item.GetText()
+        #wx.MessageBox("You selected item '%s'" % text)
+        self.popup_choice = text
+
+
+    def create_popup_menu(self, include_delete=False):
+        self.popupmenu = wx.Menu()
+        self.popup_choice = None
+
+        blocks = [block.name for block in self.bd_parent.blocklist]
+
+        if include_delete:
+            delete_item = self.popupmenu.Append(-1, 'delete')
+            self.Bind(wx.EVT_MENU, self.on_popup_item_selected, delete_item)
+            self.popupmenu.AppendSeparator()
+
+            
+        for block in blocks:
+            menu_item = self.popupmenu.Append(-1, block)
+            self.Bind(wx.EVT_MENU, self.on_popup_item_selected, menu_item)
+
+
+
+    def show_popup_menu(self, event):
+        print('in show_popup_menu')
+        col = event.GetCol()
+        row = event.GetRow()
+        print('col = %s' % col)
+        print('row = %s' % row)
+        attr = self.signals_grid.GetCellValue(row,0)
+        attr = attr.strip()
+
+        delete_bool = False
+        if attr:
+            delete_bool = True
+            
+        self.create_popup_menu(include_delete=delete_bool)
+            
+
+        result = self.PopupMenu(self.popupmenu)#, pos)
+        print('result = %s' % result)
+        
+        if result and hasattr(self, 'popup_choice'):
+            if self.popup_choice:
+                if self.popup_choice == 'delete':
+                    self.signals_grid.DeleteRows(row, 1)
+                    self.signals_grid.AppendRows(1)
+                else:
+                    self.signals_grid.SetCellValue(row, 0, self.popup_choice)
+
+
+    def get_plot_list(self):
+        """Build a list of 3-tuples where the first element is the
+        name of the block, the second is the column index, and the
+        third is the label.  Do this for each row in self.signals_grid"""
+        mylist = []
+
+        max_rows = 30
+
+        for i in range(max_rows):
+            block_name = self.signals_grid.GetCellValue(i,0)
+            if not block_name:
+                break
+
+            col = self.signals_grid.GetCellValue(i,2)
+            if not col:
+                col = 0
+            else:
+                col = int(col)
+
+            label = self.signals_grid.GetCellValue(i,1)
+            if not label:
+                label = None
+
+            cur_row = (block_name, col, label)
+            mylist.append(cur_row)
+
+        return mylist
+    
+            
+        
     def __init__(self, parent, bd_parent):
         """I am trying to deal with the idea that a modular block
         diagram GUI still needs to have only one blocklist that every
@@ -122,6 +211,17 @@ class plot_panel_with_bd_side_panel(wx.Panel):
         self.signals_grid.SetColLabelValue(1,'Label')
         self.signals_grid.SetColLabelValue(2,'Index')
 
+        self.signals_grid.Bind(wx.grid.EVT_GRID_CELL_RIGHT_CLICK,
+                               self.show_popup_menu)
+
+
+        self.legloc_textctrl = xrc.XRCCTRL(self, "legloc_textctrl")
+
+        self.refresh_button = xrc.XRCCTRL(self, "refresh_button")
+        wx.EVT_BUTTON(self.refresh_button, self.refresh_button.GetId(),
+                      self.on_refresh_plot)
+
+        
         self.bd_parent = bd_parent
         assert hasattr(self.bd_parent, 'blocklist'), \
                "The parent of a tikz_viewer_panel must have a blocklist attribute"       
