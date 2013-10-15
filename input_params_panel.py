@@ -58,7 +58,11 @@ class input_params_panel(panel_with_params_grid):
         defaults = [None]*N
         starting_dict = dict(zip(params_list, defaults))
 
-        starting_dict.update(defaults_dict)
+        for key, val in defaults_dict.iteritems():
+            if starting_dict.has_key(key):
+                starting_dict[key] = val
+        
+        #starting_dict.update(defaults_dict)
         self.display_params(starting_dict)
 
         
@@ -70,7 +74,12 @@ class input_params_panel(panel_with_params_grid):
 
     def get_input_params(self):
         case = self.input_choice.GetStringSelection()
+        #pdb.set_trace()
         mydict = self.build_params_dict()
+        for key, val in mydict.iteritems():
+            val = xml_utils.try_string_to_number(val)
+            mydict[key] = val
+            
         exit_status = validate_dict(mydict)
         if not exit_status:
             return case, None

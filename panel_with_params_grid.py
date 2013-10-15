@@ -3,6 +3,7 @@ import wx.xrc as xrc
 
 import wx.grid
 
+import xml_utils
 
 max_rows_default = 20
 
