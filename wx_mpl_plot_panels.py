@@ -5,6 +5,8 @@ from __future__ import print_function
 #wxversion.ensureMinimal('2.8')#<-- you can only do this in top-level modules or scripts
 
 import sys, time, os, gc
+import rwkos
+
 import matplotlib
 matplotlib.use('WXAgg')
 import matplotlib.cm as cm
@@ -82,4 +84,43 @@ class PlotPanel(wx.Panel):
         below, I guess it prevents flicker)."""
         # this is supposed to prevent redraw flicker on some X servers...
         pass
+
+
+
+xrc_folder = rwkos.FindFullPath('git/wxpython_guis')
+pp_filename = 'plot_panel_with_bd_side_panel.xrc'
+pp_xrc_path = os.path.join(xrc_folder, pp_filename)
+
+
+class plot_panel_with_bd_side_panel(wx.Panel):
+    def __init__(self, parent):
+        """I am trying to deal with the idea that a modular block
+        diagram GUI still needs to have only one blocklist that every
+        panel can access.  My approach is to have the parent
+        application contain the blocklist.  The problem is that in the
+        wxPython GUI since, the parent of a panel might be another
+        panel or a notebook or whatever.  So, bd_parent is my own
+        paramenter that refers to the block diagram parent,
+        i.e. whatever contains the actual blocklist."""
+        pre = wx.PrePanel()
+        res = xrc.XmlResource(pp_xrc_path)
+        res.LoadOnPanel(pre, parent, "main_panel") 
+        self.PostCreate(pre)
+        self.parent = parent
+
+        plot_container = xrc.XRCCTRL(self, "plot_panel")
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # matplotlib panel itself
+        self.plotpanel = PlotPanel(plot_container, fig_size=(6,5))
+        self.plotpanel.init_plot_data()
+
+        self.signals_grid = xrc.XRCCTRL(self, "signals_grid")
+        self.signals_grid.CreateGrid(10,3)
+        self.signals_grid.SetRowLabelSize(30)
+        self.signals_grid.SetColLabelValue(0,'Block')
+        self.signals_grid.SetColLabelValue(1,'Label')
+        self.signals_grid.SetColLabelValue(2,'Index')
+
+
 

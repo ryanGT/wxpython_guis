@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<resource class="wxStaticText">
+  <object class="wxPanel" name="main_panel">
+    <object class="wxFlexGridSizer">
+      <cols>2</cols>
+      <rows>1</rows>
+      <growablecols>0</growablecols>
+      <growablerows>0</growablerows>
+      <object class="sizeritem">
+        <object class="wxPanel" name="plot_panel"/>
+        <option>1</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxPanel" name="side_panel">
+          <object class="wxFlexGridSizer">
+            <cols>1</cols>
+            <rows>2</rows>
+            <object class="sizeritem">
+              <object class="wxStaticText" name="label0">
+                <label>Signals to Plot</label>
+              </object>
+              <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+              <border>5</border>
+            </object>
+          </object>
+        </object>
+        <option>1</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>5</border>
+      </object>
+    </object>
+  </object>
+</resource>
