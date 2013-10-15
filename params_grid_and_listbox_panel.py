@@ -29,6 +29,8 @@ import numpy as np
 import block_diagram_utils
 from block_diagram_utils import panel_with_parent_blocklist, change_ext
 
+from panel_with_params_grid import panel_with_params_grid
+
 import xml_utils
 
 #xrc_folder = '/Users/rkrauss/git/wxpython_guis/'
@@ -72,39 +74,9 @@ tikz_opts = ['position_type','show_outputs','tikz_block_options'] + \
 sorted_blocks = sorted(block_params.iterkeys())
 
 
-class params_grid_and_listbox_panel(wx.Panel, panel_with_parent_blocklist):
-    def clear_params_grid(self):
-        self.params_grid.SetCellValue(0,0, "parameter")
-        self.params_grid.SetCellValue(0,1, "value")
-        for i in range(1,max_rows):
-            self.params_grid.SetCellValue(i,0, "")
-            self.params_grid.SetCellValue(i,1, "")
-
-
-    def build_params_dict(self):
-        params_dict = {}
-        exit_code = 0
-        for i in range(1,max_rows):
-            key = self.params_grid.GetCellValue(i,0)
-            val = self.params_grid.GetCellValue(i,1)
-            key = key.strip()
-            val = val.strip()
-            val = xml_utils.full_clean(val)
-            if not key:
-                break
-            elif not val:
-                ## msg = 'Empty parameters are not allow: %s' % key
-                ## wx.MessageBox(msg, 'Parameter Error', 
-                ##               wx.OK | wx.ICON_ERROR)
-                ## exit_code = 1
-                ## break
-                val = None#do I really want to make this explicit, or
-                    #just leave it blank?
-            params_dict[key] = val
-        print('params_dict = %s' % params_dict)
-        return params_dict
-
-
+class params_grid_and_listbox_panel(wx.Panel, \
+                                    panel_with_parent_blocklist, \
+                                    panel_with_params_grid):
     ## def set_param_labels(self):
     ##     self.clear_params_grid()
     ##     key = self.get_new_block_type()
@@ -129,84 +101,6 @@ class params_grid_and_listbox_panel(wx.Panel, panel_with_parent_blocklist):
         for item in item_list:
             menu_item = self.popupmenu.Append(-1, item)
             self.Bind(wx.EVT_MENU, self.on_popup_item_selected, menu_item)
-
-            def get_grid_val(self, prop):
-                i = 0
-                while i < max_rows:
-                    attr = self.params_grid.GetCellValue(i, 0)
-                    if attr == prop:
-                        val = self.params_grid.GetCellValue(i, 1)
-                        return val.strip()
-                    else:
-                        i += 1
-
-
-    def set_grid_val(self, prop, value):
-        i = 0
-        while i < max_rows:
-            attr = self.params_grid.GetCellValue(i, 0)
-            if attr == prop:
-                self.params_grid.SetCellValue(i, 1, str(value))
-                return
-            else:
-                i += 1
-
-
-    def delete_grid_rows(self, prop_list):
-        i = 0
-        while i < max_rows:
-            prop = self.params_grid.GetCellValue(i, 0)
-            if prop in prop_list:
-                self.params_grid.DeleteRows(i, 1)
-            else:
-                i += 1
-
-
-    def find_first_empty_row(self):
-        i = 0
-        while i < max_rows:
-            prop = self.params_grid.GetCellValue(i, 0)
-            if not prop:
-                return i
-            else:
-                i += 1
-
-
-    def set_cell_append_if_necessary(self, row, col=0, val=''):
-        n_rows = self.params_grid.GetNumberRows()
-        if row >= n_rows:
-            self.params_grid.AppendRows(1)
-            row = self.find_first_empty_row()
-        self.params_grid.SetCellValue(row, col, val)
-
-
-    def append_rows(self, prop_list):
-        print('in append_rows')
-        print('prop_list = ' + str(prop_list))
-        start_ind = self.find_first_empty_row()
-        print('start_ind = ' + str(start_ind))
-        for i, prop in enumerate(prop_list):
-            self.set_cell_append_if_necessary(i+start_ind, 0, prop)
-
-
-    def get_existing_props(self):
-        prop_list = []
-        for i in range(1, max_rows):
-            prop = self.params_grid.GetCellValue(i, 0)
-            if prop:
-                prop_list.append(prop)
-            else:
-                return prop_list
-
-
-    def append_rows_if_missing(self, prop_list):
-        existing_rows = self.get_existing_props()
-        new_items = [item for item in prop_list if item not in existing_rows]
-        self.append_rows(new_items)
-
-
-    def autosize_columns(self, event=0):
-        self.params_grid.AutoSizeColumns()
 
 
 
