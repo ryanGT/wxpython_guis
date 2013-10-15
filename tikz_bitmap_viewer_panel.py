@@ -475,7 +475,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
                 if tex_mtime >= xml_mtime:
                     pne, ext = os.path.splitext(tex_path)
                     scaled_path = pne + '_scaled.jpg'
-                    if os.path.exists(scaled):
+                    if os.path.exists(scaled_path):
                         jpg_mtime = os.path.getmtime(scaled_path)
                         if jpg_mtime >= tex_mtime:
                             #no need to redraw the block diagram
