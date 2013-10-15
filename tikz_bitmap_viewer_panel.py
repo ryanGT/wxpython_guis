@@ -468,6 +468,24 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
             tex_path = self.on_save_tikz(event)
 
         if tex_path:
+
+            if os.path.exists(tex_path):
+                tex_mtime = os.path.getmtime(tex_path)
+                xml_mtime = os.path.getmtime(self.xml_path)
+                if tex_mtime >= xml_mtime:
+                    pne, ext = os.path.splitext(tex_path)
+                    scaled_path = pne + '_scaled.jpg'
+                    if os.path.exists(scaled):
+                        jpg_mtime = os.path.getmtime(scaled_path)
+                        if jpg_mtime >= tex_mtime:
+                            #no need to redraw the block diagram
+                            print('reusing old, scaled jpg')
+                            Img = wx.Image(scaled_path, wx.BITMAP_TYPE_JPEG)
+                            self.static_bitmap.SetBitmap(wx.BitmapFromImage(Img))
+                            self.Refresh()
+                            return
+
+            
             self.update_latex(tex_path)
 
             cmd = 'pdflatex %s' % tex_path
