@@ -96,7 +96,7 @@ class plot_panel_with_bd_side_panel(wx.Panel):
     def on_refresh_plot(self, event):
         legloc = int(self.legloc_textctrl.GetValue())
         mylist = self.get_plot_list()
-        self.parent.plot_results(mylist, clear=True, legloc=legloc)
+        self.plot_method(mylist, clear=True, legloc=legloc)
 
 
     def on_popup_item_selected(self, event):
@@ -181,8 +181,15 @@ class plot_panel_with_bd_side_panel(wx.Panel):
         return mylist
     
             
+    def get_fig(self):
+        return self.plotpanel.fig
         
-    def __init__(self, parent, bd_parent):
+        
+    def draw(self):
+        self.plotpanel.canvas.draw()
+        
+        
+    def __init__(self, parent, bd_parent, plot_method):
         """I am trying to deal with the idea that a modular block
         diagram GUI still needs to have only one blocklist that every
         panel can access.  My approach is to have the parent
@@ -196,6 +203,8 @@ class plot_panel_with_bd_side_panel(wx.Panel):
         res.LoadOnPanel(pre, parent, "main_panel") 
         self.PostCreate(pre)
         self.parent = parent
+        
+        self.plot_method = plot_method
 
         plot_container = xrc.XRCCTRL(self, "plot_panel")
         sizer = wx.BoxSizer(wx.VERTICAL)
