@@ -135,7 +135,7 @@ class plot_panel_with_bd_side_panel(wx.Panel):
             self.signals_grid.SetCellValue(i, 0, row[0])
             self.signals_grid.SetCellValue(i, 1, row[1])
             if len(row) > 2:
-                self.signals_grid.SetCellValue(i, 2, row[2])
+                self.signals_grid.SetCellValue(i, 2, str(row[2]))
             
 
     def create_popup_menu(self, include_delete=False):
