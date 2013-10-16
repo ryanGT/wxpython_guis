@@ -14,7 +14,7 @@ from __future__ import print_function
 
 use_pdfviewer = False
 
-import os, copy, rwkos
+import os, copy, rwkos, rwkmisc
 
 #import sys, time, os, gc
 
@@ -431,6 +431,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         mylist.append('\\end{document}')
         list_str = '\n'.join(mylist)
         headerpath = rwkos.FindinPath('bd_drawing_header.tex')
+        headerpath = rwkmisc.texify_path(headerpath)
         myheader = tikz_header.replace('%%%HEADERPATH%%%', headerpath)
         full_str = myheader + '\n' + list_str
         f = open(tex_path, 'wb')
