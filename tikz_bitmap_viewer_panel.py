@@ -462,7 +462,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         if hasattr(self, 'xml_path'):
             tex_path = change_ext(self.xml_path, 'tex')
             self.tex_path = tex_path
-        elif hasattr(self, 'tex_path'):
+        elif hasattr(self, 'tex_path') and self.tex_path is not None:
             tex_path = self.tex_path
         else:
             tex_path = self.on_save_tikz(event)
@@ -559,6 +559,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         xml_path = panel_with_parent_blocklist.on_load_xml(self, event)
         if xml_path:
             self.xml_path = xml_path
+            self.tex_path = None
             self.on_update_diagram(event)
         
 
