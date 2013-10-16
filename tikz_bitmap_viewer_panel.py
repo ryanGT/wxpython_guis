@@ -459,11 +459,11 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         #print('bitmap size: %s, %s' % (w,h))
         wp, hp = self.Size
 
-        if hasattr(self, 'tex_path'):
-            tex_path = self.tex_path
-        elif hasattr(self, 'xml_path'):
+        if hasattr(self, 'xml_path'):
             tex_path = change_ext(self.xml_path, 'tex')
             self.tex_path = tex_path
+        elif hasattr(self, 'tex_path'):
+            tex_path = self.tex_path
         else:
             tex_path = self.on_save_tikz(event)
 
