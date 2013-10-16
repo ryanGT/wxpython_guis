@@ -47,7 +47,7 @@ simple_wire_fmt = '\\draw [->] (%s) -- (%s);'
 complex_wire_fmt = '\\draw [->] (%s) %s (%s);'
 
 
-tikz_header = r"""\input{drawing_header}
+tikz_header = r"""\input{%%%HEADERPATH%%%}
 \def \springlength {2.0cm}
 \pgfmathparse{\springlength*3}
 \let\damperlength\pgfmathresult
@@ -430,7 +430,9 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         mylist.append('\\end{tikzpicture}')
         mylist.append('\\end{document}')
         list_str = '\n'.join(mylist)
-        full_str = tikz_header + '\n' + list_str
+        headerpath = rwkos.FindinPath('bd_drawing_header.tex')
+        myheader = tikz_header.replace('%%%HEADERPATH%%%', headerpath)
+        full_str = myheader + '\n' + list_str
         f = open(tex_path, 'wb')
         f.writelines(full_str)
         f.close()
