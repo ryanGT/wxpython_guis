@@ -454,7 +454,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
         return tex_path
 
 
-    def on_update_diagram(self, event=0):
+    def on_update_diagram(self, event=0, force_refresh=False):
         #w, h = self.static_bitmap.Size
         #print('bitmap size: %s, %s' % (w,h))
         wp, hp = self.Size
@@ -469,7 +469,7 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
 
         if tex_path:
 
-            if os.path.exists(tex_path):
+            if os.path.exists(tex_path) and (not force_refresh):
                 tex_mtime = os.path.getmtime(tex_path)
                 xml_mtime = os.path.getmtime(self.xml_path)
                 if tex_mtime >= xml_mtime:
@@ -500,12 +500,16 @@ class tikz_panel(wx.Panel, panel_with_parent_blocklist):
                 dir, fn = os.path.split(tex_path)
                 fno, ext = os.path.splitext(fn)
                 pdfname = fno + '.pdf'
-
+                jpgname = fno + '.jpg'
+                
                 os.chdir(dir)
-                cmd2 = 'pdf_to_jpeg_one_page.py -r 600 %s' % pdfname
+                if rwkos.amiWindows():
+                    cmd2 = 'gswin32c -q -dNOPAUSE -sPAPERSIZE=letter -r600 -dBATCH -sDEVICE=jpeg -o %s %s' % \
+                            (jpgname, pdfname)
+                else:
+                    cmd2 = 'pdf_to_jpeg_one_page.py -r 600 %s' % pdfname
                 os.system(cmd2)
 
-                jpgname = fno + '.jpg'
 
                 smaller_jpegname = fno + '_smaller.jpg'
                 jpgpath = os.path.join(dir, smaller_jpegname)
