@@ -1569,7 +1569,7 @@ class MyApp(wx.App):
         ## wx.EVT_BUTTON(self.save_button, self.save_button.GetId(),
         ##               self.on_save_button)
         self.preview_grid = xrc.XRCCTRL(self.frame, "preview_grid")
-        data = np.zeros((10,10))
+        data = np.zeros((5,5))
         mytable = MyGridTable(data)
         self.data = data
         self.preview_grid.SetTable(mytable)
@@ -1589,7 +1589,7 @@ class MyApp(wx.App):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         # matplotlib panel itself
-        self.plotpanel = WMPP.PlotPanel(plot_container, fig_size=(6,4))
+        self.plotpanel = WMPP.PlotPanel(plot_container, fig_size=(7,4))
         self.plotpanel.init_plot_data()
 
         # wx boilerplate

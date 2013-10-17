@@ -163,9 +163,9 @@
                         </object>
                       </object>
                       <object class="sizeritem">
-                        <object class="wxTextCtrl" name="label_text_ctrl">
-                          <size>400,20</size>
-                        </object>
+                        <object class="wxTextCtrl" name="label_text_ctrl"/>
+                        <option>1</option>
+                        <flag>wxEXPAND</flag>
                       </object>
                       <object class="sizeritem">
                         <object class="wxStaticText">
@@ -173,9 +173,9 @@
                         </object>
                       </object>
                       <object class="sizeritem">
-                        <object class="wxTextCtrl" name="legend_dict_ctrl">
-                          <size>400,20</size>
-                        </object>
+                        <object class="wxTextCtrl" name="legend_dict_ctrl"/>
+                        <option>1</option>
+                        <flag>wxEXPAND</flag>
                       </object>
                       <cols>2</cols>
                       <rows>2</rows>
@@ -216,6 +216,8 @@
                   <label>Bode</label>
                 </object>
               </object>
+              <option>1</option>
+              <flag>wxEXPAND</flag>
             </object>
             <object class="sizeritem">
               <object class="wxStaticText">
