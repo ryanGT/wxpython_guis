@@ -1447,7 +1447,8 @@ class MyApp(wx.App):
         """Initialize the :py:class:`MyApp` instance; start by loading
         the xrc resource file and then add other stuff and bind the events"""
         #xrcfile = cbook.get_sample_data('ryans_first_xrc.xrc', asfileobj=False)
-        xrcfile = 'data_vis_xrc.xrc'
+        #xrcfile = 'data_vis_xrc.xrc'
+        xrcfile = 'data_vis_xrc_hacked.xrc'
         #xrcfile = 'data_vis_xrc_broken.xrc'
         #xrcfile = 'data_vis_xrc_editted.xrc'
         print('loading', xrcfile)
