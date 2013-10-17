@@ -274,6 +274,7 @@ class figure_parser(plot_description_file_parser):
             return body
         else:
             raise ValueError, "Not sure how to proceed for a figure with tag %s" % self.root.tag
+
         
     def parse(self):
         """convert the XML associated with self to a list of parsed
@@ -360,6 +361,20 @@ class gui_state_parser(plot_description_file_parser):
             
 
 
+def list_to_str(listin):
+    str_out = ''
+    first = True
+
+    for item in listin:
+        if first:
+            first = False
+        else:
+            str_out += ', '
+        str_out += str(item)
+
+    return str_out
+
+
 class plot_description(xml_utils.xml_writer):
     """This class will be used to determine how to plot a certain data
     file and how to save that plot description as an XML file.  The
@@ -400,7 +415,7 @@ class plot_description(xml_utils.xml_writer):
                           'bode_input_str','bode_output_str']
         
 
-    def create_lable_str(self):
+    def create_label_str(self):
         """convert the columns labels of the data file into a command
         delimitted string that can be place in one text box"""
         label_str = ''
@@ -415,6 +430,25 @@ class plot_description(xml_utils.xml_writer):
 
         return label_str
 
+
+    def create_list_str(self, attr):
+        out_str = ''
+        if hasattr(self, attr):
+            mylist = getattr(self, attr)
+            if mylist:
+                out_str = list_to_str(mylist)
+
+        return out_str
+
+
+    def create_xlim_str(self):
+        return self.create_list_str('xlim')
+
+
+    def create_ylim_str(self):
+        return self.create_list_str('ylim')
+    
+        
 
     def plot(self, ax, clear=False):
         """create a time domain plot by calling the
@@ -807,6 +841,35 @@ class MyApp(wx.App):
         fig = self.get_fig()
         fig.clf()
 
+
+    def _get_list_as_str(self, widget):
+        mystr = widget.GetValue()
+        mylist = xml_utils.list_string_to_list(mystr)
+        return mylist
+    
+        
+    def set_td_xlim_ylim(self):
+        xlim = self._get_list_as_str(self.xlim_textctrl)
+        ylim = self._get_list_as_str(self.ylim_textctrl)
+        ax = self.get_axis()
+
+        
+        redraw = False
+        
+        if xlim:
+            ax.set_xlim(xlim)
+            redraw = True
+            
+        print('type(ylim) = ' + str(type(ylim)))
+        print('ylim = ' + str(ylim))
+        
+        if ylim:
+            ax.set_ylim(ylim)
+            redraw = True
+
+        if redraw:
+            self.plotpanel.canvas.draw()
+        
         
     def plot_all_td(self):
         """Plot the time domain graphs for all selected plot descriptions"""
@@ -814,6 +877,11 @@ class MyApp(wx.App):
         inds = self.get_selected_plot_inds()
         if len(inds) > 0:
             self.plot_td(inds)
+
+        self.set_td_xlim_ylim()
+
+        
+        
 
 
     def plot_all_bode(self):
@@ -844,7 +912,7 @@ class MyApp(wx.App):
         """Set the value of :py:attr:`MyApp.label_text_ctrl` to the
         comma delimited string from the labels of
         :py:attr:`MyApp.cur_plot_description`"""
-        label_str = self.cur_plot_description.create_lable_str()
+        label_str = self.cur_plot_description.create_label_str()
         self.label_text_ctrl.SetValue(label_str)
 
 
@@ -1162,7 +1230,7 @@ class MyApp(wx.App):
     def plot_parameters_to_gui(self, plot_description):
         """Transfer the parameters of plot_description to the
         corresponding GUI text controls."""
-        label_str = plot_description.create_lable_str()
+        label_str = plot_description.create_label_str()
         self.label_text_ctrl.SetValue(label_str)
         legend_str = plot_description.create_legend_str()
         self.legend_dict_ctrl.SetValue(legend_str)
@@ -1406,13 +1474,24 @@ class MyApp(wx.App):
         #   - select the right plot descriptions
         # - redraw the figure
         xml_path = wx_utils.my_file_dialog(parent=self.frame, \
-                                   msg="Chose an XML file", \
+                                   msg="Chose an XML Figure file", \
                                    default_file="", \
                                    wildcard=xml_wildcard)
         if xml_path:
             myparser = figure_parser(xml_path)
             myparser.parse()
-            myfig = myparser.convert()
+            myfig = myparser.convert()#<-- myfig has xlim and ylim, but the plot_descriptions do not
+
+            if myfig.xlim:
+                xlim_str = list_to_str(myfig.xlim)
+                self.xlim_textctrl.SetValue(xlim_str)
+
+            print('myfig.ylim = ' + str(myfig.ylim))
+            if myfig.ylim:
+                ylim_str = list_to_str(myfig.ylim)
+                print('ylim_str = ' + ylim_str)
+                self.ylim_textctrl.SetValue(ylim_str)
+            
             for pd in myfig.plot_descriptions:
                 self.add_plot_description(pd)
             #set active plot_description
@@ -1497,6 +1576,10 @@ class MyApp(wx.App):
         self.legend_dict_ctrl = xrc.XRCCTRL(self.frame, "legend_dict_ctrl")
         self.legloc_ctrl = xrc.XRCCTRL(self.frame, "legloc_ctrl")
         self.legloc_ctrl.SetValue("1")
+
+        self.xlim_textctrl = xrc.XRCCTRL(self.frame, 'xlim_textctrl')
+        self.ylim_textctrl = xrc.XRCCTRL(self.frame, 'ylim_textctrl')
+        
 
         self.menubar = self.frame.GetMenuBar()
         self.frame.Bind(wx.EVT_MENU, self.on_add_file, \

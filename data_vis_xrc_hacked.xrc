@@ -159,8 +159,9 @@
                   <object class="wxFlexGridSizer">
                     <object class="sizeritem">
                       <object class="wxStaticText">
-                        <label>Plot Labels</label>
+                        <label>Plot Labels:</label>
                       </object>
+                      <flag>wxALIGN_RIGHT</flag>
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="label_text_ctrl"/>
@@ -169,8 +170,9 @@
                     </object>
                     <object class="sizeritem">
                       <object class="wxStaticText">
-                        <label>Legend Dict.</label>
+                        <label>Legend Dict.:</label>
                       </object>
+                      <flag>wxALIGN_RIGHT</flag>
                     </object>
                     <object class="sizeritem">
                       <object class="wxTextCtrl" name="legend_dict_ctrl"/>
@@ -178,9 +180,31 @@
                       <flag>wxEXPAND</flag>
                     </object>
                     <cols>2</cols>
-                    <rows>2</rows>
+                    <rows>4</rows>
                     <vgap>5</vgap>
                     <growablecols>1</growablecols>
+                    <object class="sizeritem">
+                      <object class="wxStaticText" name="ylim_label">
+                        <label>ylim:</label>
+                      </object>
+                      <flag>wxALIGN_RIGHT</flag>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxTextCtrl" name="ylim_textctrl"/>
+                      <option>1</option>
+                      <minsize>100,25</minsize>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxStaticText" name="xlim_label">
+                        <label>xlim:</label>
+                      </object>
+                      <flag>wxALIGN_RIGHT</flag>
+                    </object>
+                    <object class="sizeritem">
+                      <object class="wxTextCtrl" name="xlim_textctrl"/>
+                      <option>1</option>
+                      <minsize>100,25</minsize>
+                    </object>
                   </object>
                 </object>
                 <label>Time Domain</label>
