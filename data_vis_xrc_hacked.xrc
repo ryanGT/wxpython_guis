@@ -8,10 +8,6 @@
           <label>&amp;Add File</label>
           <accel>ctrl+a</accel>
         </object>
-        <object class="wxMenuItem" name="exit_menu">
-          <label>&amp;Quit</label>
-          <accel>ctrl+q</accel>
-        </object>
         <object class="wxMenuItem" name="save_plot_description">
           <label>Save Plot Description (current)</label>
           <accel>ctrl+s</accel>
@@ -20,8 +16,13 @@
           <label>Save GUI State</label>
           <accel>ctrl+shift+s</accel>
         </object>
+        <object class="wxMenuItem" name="export_figure_png">
+          <label>Export Figure to PNG</label>
+          <accel>ctrl+shift+p</accel>
+          <help>Save Active Figure to XML</help>
+        </object>
         <object class="wxMenuItem" name="save_figure">
-          <label>Save Figure</label>
+          <label>Save Figure to XML</label>
           <accel>ctrl+alt+s</accel>
           <help>Save Active Figure to XML</help>
         </object>
@@ -37,6 +38,10 @@
           <label>Load Figure</label>
           <accel>ctrl+alt+l</accel>
           <help>Load a Figure Description from an XML file</help>
+        </object>
+        <object class="wxMenuItem" name="exit_menu">
+          <label>&amp;Quit</label>
+          <accel>ctrl+q</accel>
         </object>
       </object>
       <object class="wxMenu" name="plot_menu">
@@ -78,7 +83,7 @@
           </object>
         </object>
         <orientation>horizontal</orientation>
-        <sashpos>450</sashpos>
+        <sashpos>600</sashpos>
       </object>
       <object class="wxPanel" name="side_panel">
         <object class="wxBoxSizer">

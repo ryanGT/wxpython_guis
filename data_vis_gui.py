@@ -169,6 +169,8 @@ import pdb
 data_wildcard = "Text files (*.txt; *.csv)|*.txt;*.csv|" \
                 "All files (*.*)|*.*"
 xml_wildcard = "XML files (*.xml)|*.xml"
+png_wildcard = "PNG files (*.png)|*.png"
+eps_wildcard = "EPS files (*.eps)|*.eps"
 
 
 import xml.etree.ElementTree as ET
@@ -219,8 +221,10 @@ def parse_one_pd(pd_xml):
            "Child is not a valid plot_description xml chunk."
     string_dict = xml_utils.children_to_dict(pd_xml)
     out_dict = copy.copy(string_dict)
-    out_dict['plot_labels'] = xml_utils.list_string_to_list(out_dict['plot_labels'])
-    out_dict['legend_dict'] = xml_utils.dict_string_to_dict(out_dict['legend_dict'])
+    if type(out_dict['plot_labels']) in [str, unicode]:
+        out_dict['plot_labels'] = xml_utils.list_string_to_list(out_dict['plot_labels'])
+    if type(out_dict['legend_dict']) in [str, unicode]:
+        out_dict['legend_dict'] = xml_utils.dict_string_to_dict(out_dict['legend_dict'])
     return out_dict
 
 
@@ -924,7 +928,6 @@ class MyApp(wx.App):
         on the selected notebook tab and then refresh the plot after
         reading the values out of the plot related text controls."""
         sel = self.td_bode_notebook.GetSelection()
-        #pdb.set_trace()
         if sel == 0:
             #time domain plot
             labels = self.parse_label_str()
@@ -1185,7 +1188,6 @@ class MyApp(wx.App):
         from the plot_description into the corresponding text
         contorls."""
         inds = self.plot_name_list_box.GetSelections()
-        #pdb.set_trace()
         if len(inds) == 1:
             ind = inds[0]
             key = self.plot_name_list_box.GetString(ind)
@@ -1234,6 +1236,16 @@ class MyApp(wx.App):
         dlg.Destroy()
 
 
+    def on_export_fig_png(self, event):
+        print('in on_export_fig_png')
+        png_path = wx_utils.my_file_dialog(parent=self.frame, \
+                                           msg="Export figure as PNG file", default_file="", \
+                                           wildcard=png_wildcard, \
+                                           kind="save", \
+                                           check_overwrite=True)
+        if png_path:
+            self.plotpanel.fig.savefig(png_path, dpi=200)
+    
 
     def on_save_figure(self, event):
         """Save the active figure to an XML file"""
@@ -1322,7 +1334,6 @@ class MyApp(wx.App):
         if xml_path:
             print('xml_path = ' + xml_path)
             myparser = gui_state_parser(xml_path)
-            #pdb.set_trace()
             myparser.parse()
             myparser.convert()
             for pd in myparser.pd_list:
@@ -1486,7 +1497,7 @@ class MyApp(wx.App):
         self.legend_dict_ctrl = xrc.XRCCTRL(self.frame, "legend_dict_ctrl")
         self.legloc_ctrl = xrc.XRCCTRL(self.frame, "legloc_ctrl")
         self.legloc_ctrl.SetValue("1")
-        #pdb.set_trace()
+
         self.menubar = self.frame.GetMenuBar()
         self.frame.Bind(wx.EVT_MENU, self.on_add_file, \
                         id=xrc.XRCID('add_file_menu'))
@@ -1500,6 +1511,8 @@ class MyApp(wx.App):
                         id=xrc.XRCID('save_gui_state'))
         self.frame.Bind(wx.EVT_MENU, self.on_save_figure, \
                         id=xrc.XRCID('save_figure'))
+        self.frame.Bind(wx.EVT_MENU, self.on_export_fig_png, \
+                        id=xrc.XRCID('export_figure_png'))
         self.frame.Bind(wx.EVT_MENU, self.on_load_plot_descriptions, \
                         id=xrc.XRCID('load_plot_descriptions'))
         self.frame.Bind(wx.EVT_MENU, self.on_load_gui_state, \
