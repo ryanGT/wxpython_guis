@@ -73,7 +73,7 @@
               <orient>wxVERTICAL</orient>
               <object class="sizeritem">
                 <object class="wxGrid" name="preview_grid"/>
-                <option>1.0</option>
+                <option>1</option>
                 <flag>wxEXPAND</flag>
               </object>
             </object>
@@ -81,7 +81,7 @@
           <orientation>horizontal</orientation>
           <sashpos>450</sashpos>
         </object>
-        <option>0.8</option>
+        <option>1</option>
         <flag>wxEXPAND</flag>
       </object>
       <object class="sizeritem">
@@ -249,7 +249,7 @@
                   </object>
                   <object class="sizeritem">
                     <object class="wxListBox" name="plot_name_list_box">
-                      <style>wxLB_MULTIPLE|wxLB_EXTENDED</style>
+                      <style>wxLB_EXTENDED</style>
                     </object>
                     <flag>wxEXPAND</flag>
                     <cellpos>1,0</cellpos>
@@ -281,7 +281,7 @@
           </object>
           <style>wxBORDER_RAISED</style>
         </object>
-        <option>1.0</option>
+        <option>1</option>
         <flag>wxALL</flag>
         <border>5</border>
       </object>

@@ -1589,7 +1589,7 @@ class MyApp(wx.App):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         # matplotlib panel itself
-        self.plotpanel = WMPP.PlotPanel(plot_container, fig_size=(7,4))
+        self.plotpanel = WMPP.PlotPanel(plot_container, fig_size=(6,4))
         self.plotpanel.init_plot_data()
 
         # wx boilerplate
