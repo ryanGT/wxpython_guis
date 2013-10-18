@@ -130,7 +130,7 @@ To Do Items
 ==================
 
 - It is not currently possible to load a data file that contains Bode
-  columns direcdtly, i.e. you cannot load frequency, dB magnitude and
+  columns directly, i.e. you cannot load frequency, dB magnitude and
   phase from a data file; it is expected that you load a time domain
   file and calculate the Bode parameters from the time domain data.
   It should be made possible to load frequency, dB or linear
@@ -842,15 +842,15 @@ class MyApp(wx.App):
         fig.clf()
 
 
-    def _get_list_as_str(self, widget):
+    def _get_list_from_textctrl(self, widget):
         mystr = widget.GetValue()
         mylist = xml_utils.list_string_to_list(mystr)
         return mylist
     
         
     def set_td_xlim_ylim(self):
-        xlim = self._get_list_as_str(self.xlim_textctrl)
-        ylim = self._get_list_as_str(self.ylim_textctrl)
+        xlim = self._get_list_from_textctrl(self.xlim_textctrl)
+        ylim = self._get_list_from_textctrl(self.ylim_textctrl)
         ax = self.get_axis()
 
         
@@ -1002,7 +1002,12 @@ class MyApp(wx.App):
             self.cur_plot_description.plot_labels = labels
             legend_dict = self.parse_legend_str()
             self.cur_plot_description.legend_dict = legend_dict
-            legloc = int(self.legloc_ctrl.GetValue())
+            try:
+                legloc = int(self.legloc_ctrl.GetValue())
+            except ValueError:
+                legstr = self.legloc_ctrl.GetValue()
+                if legstr.find(',') > -1:
+                    legloc = xml_utils.list_string_to_list(legstr)
             self.cur_plot_description.legloc = legloc
             self.plot_all_td()
         elif sel == 1:
@@ -1130,9 +1135,13 @@ class MyApp(wx.App):
         sel = self.td_bode_notebook.GetSelection()
         if sel == 0:
             myclass = time_domain_figure
+            xlim = self._get_list_from_textctrl(self.xlim_textctrl)
+            ylim = self._get_list_from_textctrl(self.ylim_textctrl)
+            kwargs = {'xlim':xlim, 'ylim':ylim}
         elif sel == 1:
             myclass = bode_figure
-        fig = myclass(fig_name, pd_list)
+            kwargs = {}
+        fig = myclass(fig_name, pd_list, **kwargs)
         self.active_fig = fig
         
         if fig_num > 9:
@@ -1313,7 +1322,19 @@ class MyApp(wx.App):
                                            check_overwrite=True)
         if png_path:
             self.plotpanel.fig.savefig(png_path, dpi=200)
-    
+
+
+    def update_active_figure(self):
+        """Update the active figure before saving it to xml."""
+        xlim = self._get_list_from_textctrl(self.xlim_textctrl)
+        ylim = self._get_list_from_textctrl(self.ylim_textctrl)
+
+        if( not hasattr(self, 'active_fig')) or (self.active_fig is None):
+            return
+
+        self.active_fig.xlim = xlim
+        self.active_fig.ylim = ylim
+        
 
     def on_save_figure(self, event):
         """Save the active figure to an XML file"""
@@ -1336,6 +1357,7 @@ class MyApp(wx.App):
                                            )
         if xml_path:
             root = ET.Element('figure')
+            self.update_active_figure()
             self.active_fig.create_xml(root)
             xml_utils.write_pretty_xml(root, xml_path)
 
