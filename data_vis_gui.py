@@ -542,12 +542,12 @@ class time_domain_figure(figure):
     user should create either a :py:class:`time_domain_figure` or a
     :py:class:`bode_figure`."""
     def __init__(self, name, plot_descriptions, xlim=None, ylim=None, \
-                 ylabel=None, xlabel=None):
+                 ylabel=None, xlabel=None, legloc=None):
         figure.__init__(self, name, plot_descriptions, plot_type='time', \
                         xlim=xlim, ylim=ylim, \
-                        xlabel=xlabel, ylabel=ylabel)
+                        xlabel=xlabel, ylabel=ylabel, legloc=legloc)
         self.xml_tag_name = 'time_domain_figure'
-        self.xml_params = ['xlim','ylim','ylabel','xlabel']
+        self.xml_params = ['xlim','ylim','ylabel','xlabel','legloc']
         
 
 class bode_figure(figure):
@@ -990,6 +990,18 @@ class MyApp(wx.App):
             self.plot_all_bode()
             
 
+    def get_legloc(self):
+        legloc = None
+        try:
+            legloc = int(self.legloc_ctrl.GetValue())
+        except ValueError:
+            legstr = self.legloc_ctrl.GetValue()
+            if legstr.find(',') > -1:
+                legloc = xml_utils.list_string_to_list(legstr)
+                
+        return legloc
+
+        
     def on_update_plot(self, event):
         """Respond to the Update Plot button or menu or hotkey.
         Determine whether the active plot is time domain or Bode based
@@ -1002,12 +1014,7 @@ class MyApp(wx.App):
             self.cur_plot_description.plot_labels = labels
             legend_dict = self.parse_legend_str()
             self.cur_plot_description.legend_dict = legend_dict
-            try:
-                legloc = int(self.legloc_ctrl.GetValue())
-            except ValueError:
-                legstr = self.legloc_ctrl.GetValue()
-                if legstr.find(',') > -1:
-                    legloc = xml_utils.list_string_to_list(legstr)
+            legloc = self.get_legloc()
             self.cur_plot_description.legloc = legloc
             self.plot_all_td()
         elif sel == 1:
@@ -1137,7 +1144,8 @@ class MyApp(wx.App):
             myclass = time_domain_figure
             xlim = self._get_list_from_textctrl(self.xlim_textctrl)
             ylim = self._get_list_from_textctrl(self.ylim_textctrl)
-            kwargs = {'xlim':xlim, 'ylim':ylim}
+            legloc = self.get_legloc()
+            kwargs = {'xlim':xlim, 'ylim':ylim, 'legloc':legloc}
         elif sel == 1:
             myclass = bode_figure
             kwargs = {}
@@ -1328,12 +1336,15 @@ class MyApp(wx.App):
         """Update the active figure before saving it to xml."""
         xlim = self._get_list_from_textctrl(self.xlim_textctrl)
         ylim = self._get_list_from_textctrl(self.ylim_textctrl)
+        legloc = self.get_legloc()
 
         if( not hasattr(self, 'active_fig')) or (self.active_fig is None):
             return
 
         self.active_fig.xlim = xlim
         self.active_fig.ylim = ylim
+        self.active_fig.legloc = legloc
+        
         
 
     def on_save_figure(self, event):
@@ -1513,8 +1524,16 @@ class MyApp(wx.App):
                 ylim_str = list_to_str(myfig.ylim)
                 print('ylim_str = ' + ylim_str)
                 self.ylim_textctrl.SetValue(ylim_str)
-            
+
+            legloc = None
+            if hasattr(myfig,'legloc'):
+                if myfig.legloc is not None:
+                    legloc_str = list_to_str(myfig.legloc)
+                    self.legloc_ctrl.SetValue(legloc_str)
+                    legloc = myfig.legloc
+                    
             for pd in myfig.plot_descriptions:
+                pd.legloc = legloc#<-- this seems hackish
                 self.add_plot_description(pd)
             #set active plot_description
             self.cur_plot_description = pd
