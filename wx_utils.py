@@ -5,6 +5,9 @@ import wx.xrc as xrc
 
 import wx.grid
 
+import xml.etree.ElementTree as ET
+import xml_utils
+
 def my_file_dialog(parent=None, \
                    msg="Chose a file", default_file="", \
                    wildcard="All files (*.*)|*.*", \
@@ -41,3 +44,30 @@ def my_file_dialog(parent=None, \
     dlg.Destroy()
 
     return filepath
+
+
+class gui_that_saves(object):
+    """A mixin class for saving to xml based on calling the GetValue
+    method for a list of wxPython controls."""
+    def create_xml(self, root_name, control_attr_list):
+        """generate xml for saving the gui state.  control_attr_list
+        is a list of strings containing the names of the gui attrs
+        whose GetValue methods should be called"""
+        xml_root = root = ET.Element(root_name)
+
+        for attr in control_attr_list:
+            control = getattr(self, attr)
+            value = control.GetValue()
+            cur_xml = ET.SubElement(xml_root, attr)
+            cur_xml.text = value.encode()
+
+        self.xml = xml_root
+
+
+    def load_xml(self, filename):
+        parser = xml_utils.xml_parser(filename)
+        mydict = xml_utils.children_to_dict(parser.root)
+        for attr, val in mydict.iteritems():
+            control = getattr(self, attr)
+            control.SetValue(val)
+            

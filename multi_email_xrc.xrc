@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<resource class="wxBoxSizer">
+  <object class="wxFrame" name="main_frame">
+    <object class="wxPanel" name="MainPanel">
+      <object class="wxBoxSizer">
+        <orient>wxVERTICAL</orient>
+        <object class="sizeritem">
+          <object class="wxPanel" name="file_dialog_panel">
+            <object class="wxFlexGridSizer">
+              <object class="sizeritem">
+                <object class="wxStaticText" name="spreadsheet_label">
+                  <label>Spreadsheet Path</label>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="empty"/>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="spreadsheet_path_box">
+                  <size>500,-1</size>
+                </object>
+                <option>1</option>
+              </object>
+              <object class="sizeritem">
+                <object class="wxButton" name="spreadsheet_browse_button">
+                  <label>Browse</label>
+                  <XRCED>
+                    <events>EVT_BUTTON</events>
+                  </XRCED>
+                </object>
+              </object>
+              <cols>2</cols>
+              <rows>2</rows>
+              <hgap>5</hgap>
+              <growablecols>0</growablecols>
+            </object>
+          </object>
+          <border>10</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="email_panel">
+            <object class="wxFlexGridSizer">
+              <object class="sizeritem">
+                <object class="wxStaticText" name="subject_label">
+                  <label>Subject</label>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="subject_box">
+                  <size>500,-1</size>
+                </object>
+                <option>1</option>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="greeting_label">
+                  <label>Greeting</label>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="greeting_box">
+                  <value>%s,</value>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="body_label">
+                  <label>Body</label>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="body_box">
+                  <size>500,200</size>
+                  <style>wxTE_MULTILINE|wxTE_WORDWRAP</style>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="closing_label">
+                  <label>Closing</label>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="closing_box">
+                  <size>500,120</size>
+                  <value>Sincerely,\n\nDr. Krauss</value>
+                  <style>wxTE_MULTILINE|wxTE_WORDWRAP</style>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="sig_label">
+                  <label>My Signature</label>
+                </object>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="signature_box">
+                  <size>500,120</size>
+                  <style>wxTE_MULTILINE|wxTE_WORDWRAP</style>
+                </object>
+              </object>
+              <cols>1</cols>
+              <rows>10</rows>
+            </object>
+          </object>
+          <border>10</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="send_panel">
+            <object class="wxBoxSizer">
+              <orient>wxHORIZONTAL</orient>
+              <object class="sizeritem">
+                <object class="wxButton" name="send_button">
+                  <label>Send</label>
+                </object>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxCheckBox" name="debug_check">
+                  <label>debug</label>
+                </object>
+              </object>
+            </object>
+          </object>
+        </object>
+      </object>
+    </object>
+    <title>Multi-Email GUI</title>
+    <object class="wxMenuBar" name="main_menu_bar">
+      <object class="wxMenu" name="file_menu">
+        <label>File</label>
+        <object class="wxMenuItem" name="save_menu_item">
+          <label>Save</label>
+          <accel>ctrl+s</accel>
+        </object>
+        <object class="wxMenuItem" name="load_menu_item">
+          <label>Load</label>
+          <accel>ctrl+l</accel>
+        </object>
+        <object class="wxMenuItem" name="quit_menu_item">
+          <label>Quit</label>
+          <accel>ctrl+q</accel>
+        </object>
+      </object>
+    </object>
+  </object>
+</resource>
