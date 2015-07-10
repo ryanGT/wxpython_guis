@@ -216,11 +216,16 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
             assert len(inds) == 1, "found more than one match for %s" %s
             ind = inds[0]
             fn_label = db.labels[ind] 
-            attr = db.label_attr_dict[fn_label]
+            attr = db.attr_label_dict[fn_label]
             vect = getattr(db, attr)
             return vect
-        
-        self.first_names = get_db_attr_by_pat('[Ff]irst[ _][Nn]ame')
+
+        fn_pat = '[Ff]irst[ _][Nn]ame'
+        try:
+            self.first_names = get_db_attr_by_pat(fn_pat)
+        except:
+            print('delimited text file must have a column label that matches %s' % \
+                  fn_pat)
         self.emails = get_db_attr_by_pat('[Ee]mail')
         
         if debug:
@@ -285,8 +290,12 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
             emails = self.emails
 
         subject = self.subject_box.GetValue().encode()
+
+        N = len(emails)
+        n_list = range(N)
         
-        for fname, email in zip(first_names, emails):
+        for fname, email, n in zip(first_names, emails, n_list):
+            print('sending to %s, %i of %i' % (email, n+1, N))
             text = self.build_email_text(fname)
             recipients = [email]
             if debug:
