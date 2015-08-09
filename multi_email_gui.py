@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import print_function
 
 # Used to guarantee to use at least Wx2.8
