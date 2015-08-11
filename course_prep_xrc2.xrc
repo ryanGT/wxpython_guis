@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>
+<resource class="wxBoxSizer">
+  <object class="wxFrame" name="main_frame">
+    <title>Course Prep GUI</title>
+    <object class="wxPanel" name="main_panel">
+      <object class="wxBoxSizer">
+        <orient>wxVERTICAL</orient>
+        <object class="sizeritem">
+          <object class="wxStaticText" name="course_choice_label">
+            <label>Course</label>
+          </object>
+          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxChoice" name="course_choice">
+            <content>
+              <item>450</item>
+              <item>458</item>
+            </content>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxStaticText" name="lecture_num_label">
+            <label>Lecture Number</label>
+          </object>
+          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxTextCtrl" name="lecture_number_box"/>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxButton" name="next_button">
+            <label>Next</label>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxStaticText" name="lecture_title_label">
+            <label>Lecture Title</label>
+          </object>
+          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxTextCtrl" name="lecture_title_box">
+            <size>600,-1</size>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxStaticText" name="root_dir_label">
+            <label>Root Directory</label>
+          </object>
+          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxTextCtrl" name="root_folder_box">
+            <size>600,-1</size>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxButton" name="root_browse">
+            <label>Browse</label>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxALIGN_RIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxButton" name="go_button">
+            <label>Go</label>
+          </object>
+          <flag>wxALL|wxALIGN_CENTRE_HORIZONTAL</flag>
+          <border>5</border>
+        </object>
+      </object>
+    </object>
+    <object class="wxMenuBar" name="main_menu">
+      <object class="wxMenu" name="file_menu">
+        <label>File</label>
+        <object class="wxMenuItem" name="menu_save">
+          <label>Save</label>
+          <accel>ctrl+s</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_load">
+          <label>Load</label>
+          <accel>ctrl+l</accel>
+        </object>
+      </object>
+    </object>
+  </object>
+</resource>

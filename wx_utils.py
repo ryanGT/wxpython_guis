@@ -8,8 +8,31 @@ import wx.grid
 import xml.etree.ElementTree as ET
 import xml_utils
 
+def my_dir_dialog(parent=None,\
+                  start_dir="",\
+                  msg="Choose a directory", \
+                  style=wx.DD_DEFAULT_STYLE,
+                  ):
+
+    dlg = wx.DirDialog(parent, msg, \
+                        start_dir,
+                        style)
+
+    if dlg.ShowModal() == wx.ID_OK:
+        pathout = dlg.GetPath()
+    else:
+        pathout = None
+
+    dlg.Destroy()
+
+    return pathout
+
+
+
+    
 def my_file_dialog(parent=None, \
                    msg="Chose a file", default_file="", \
+                   start_dir="", \
                    wildcard="All files (*.*)|*.*", \
                    kind="open", \
                    check_overwrite=False):
@@ -30,6 +53,7 @@ def my_file_dialog(parent=None, \
         
     dlg = wx.FileDialog(parent, message=msg, \
                         defaultFile=default_file, \
+                        defaultDir=start_dir, \
                         wildcard=wildcard, \
                         style=flags, \
                         )
@@ -57,7 +81,10 @@ class gui_that_saves(object):
 
         for attr in control_attr_list:
             control = getattr(self, attr)
-            value = control.GetValue()
+            if hasattr(control, 'GetValue'):
+                value = control.GetValue()
+            elif hasattr(control, 'GetSelection'):
+                value = str(control.GetSelection())
             cur_xml = ET.SubElement(xml_root, attr)
             cur_xml.text = value.encode()
 
@@ -69,5 +96,8 @@ class gui_that_saves(object):
         mydict = xml_utils.children_to_dict(parser.root)
         for attr, val in mydict.iteritems():
             control = getattr(self, attr)
-            control.SetValue(val)
+            if hasattr(control, 'SetValue'):
+                control.SetValue(val)
+            elif hasattr(control, 'SetSelection'):
+                control.SetSelection(int(val))
             
