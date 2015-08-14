@@ -20,13 +20,7 @@ xml_wildcard = "XML files (*.xml)|*.xml"
 
 import re
 
-p1 = re.compile('^ME_*([0-9]+)_lecture_([0-9]+)_')
-
-git_dir = '/Users/rkrauss/git/wxpython_guis/'
-
-course_roots = {'450':'/Users/rkrauss/Fall_2015_classes/450_Fall_2015/prep/', \
-                '458':'/Users/rkrauss/Fall_2015_classes/458_Fall_2015/prep/', \
-                }
+from lecture_wx_utils import *
 
 import file_finder
 

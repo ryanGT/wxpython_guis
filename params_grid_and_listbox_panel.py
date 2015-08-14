@@ -1,6 +1,6 @@
 """This module contains a panel that creates tikz block diagrams from
-an xml description of a system.  This block diagrams are converted to
-jpegs and place on a static bitmap.
+an xml description of a system.  These block diagrams are converted to
+jpegs and placed on a static bitmap.
 
 Note that I am using self.bd_parent.blocklist to prevent a toplevel
 application from having multiple blocklists for each panel and having

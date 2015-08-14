@@ -1,0 +1,280 @@
+<?xml version="1.0" ?>
+<resource class="wxStaticText">
+  <object class="wxFrame" name="main_frame">
+    <title>Lecture Prep Copy GUI</title>
+    <object class="wxPanel" name="main_panel">
+      <object class="wxBoxSizer">
+        <orient>wxVERTICAL</orient>
+        <object class="sizeritem">
+          <object class="wxPanel" name="course_panel">
+            <object class="wxBoxSizer">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="course_label">
+                  <label>Course</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxChoice" name="course_choice">
+                  <content>
+                    <item>450</item>
+                    <item>458</item>
+                  </content>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+            </object>
+          </object>
+          <flag>wxALL</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="source_panel">
+            <object class="wxFlexGridSizer">
+              <cols>2</cols>
+              <rows>2</rows>
+              <growablecols>0</growablecols>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="source_label">
+                  <label>Source/Prep Directory</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="empty_label1"/>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="source_dir_box">
+                  <size>400,-1</size>
+                </object>
+                <option>1</option>
+                <flag>wxLEFT|wxRIGHT|wxEXPAND</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxButton" name="source_browse_button">
+                  <label>Browse</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+            </object>
+          </object>
+          <flag>wxALL</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="source_files_panel">
+            <object class="wxFlexGridSizer">
+              <object class="sizeritem">
+                <object class="wxStaticText" name="source_files_label">
+                  <label>Source Files</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <cols>1</cols>
+              <rows>2</rows>
+              <growablecols>0</growablecols>
+              <growablerows>1</growablerows>
+              <object class="sizeritem">
+                <object class="wxListBox" name="source_files_list">
+                  <size>400,150</size>
+                  <style>wxLB_MULTIPLE|wxLB_EXTENDED</style>
+                </object>
+                <option>1</option>
+                <flag>wxLEFT|wxRIGHT|wxEXPAND|wxGROW</flag>
+                <border>5</border>
+              </object>
+            </object>
+          </object>
+          <flag>wxALL</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="dest_panel">
+            <object class="wxFlexGridSizer">
+              <object class="sizeritem">
+                <object class="wxStaticText" name="dest_dir_label">
+                  <label>Destination Directory</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="empty_label2"/>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="dest_dir_box">
+                  <size>400,-1</size>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxButton" name="dest_browse_button">
+                  <label>Browse</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxButton" name="make_lecture_folder_button">
+                  <label>Make Folder</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <cols>2</cols>
+              <rows>3</rows>
+              <growablecols>0</growablecols>
+              <object class="sizeritem">
+                <object class="wxCheckBox" name="lecure_folder_exists_check">
+                  <label>exists</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+            </object>
+          </object>
+          <flag>wxALL</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="copy_panel">
+            <object class="wxBoxSizer">
+              <object class="sizeritem">
+                <object class="wxButton" name="copy_button">
+                  <label>Copy</label>
+                </object>
+                <flag>wxALL|wxALIGN_CENTRE_VERTICAL</flag>
+                <border>7</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxCheckBox" name="overwrite_check">
+                  <label>overwrite</label>
+                </object>
+                <flag>wxALL|wxALIGN_CENTRE_VERTICAL</flag>
+                <border>5</border>
+              </object>
+              <orient>wxHORIZONTAL</orient>
+            </object>
+          </object>
+          <flag>wxALIGN_CENTRE_HORIZONTAL</flag>
+        </object>
+      </object>
+    </object>
+    <object class="wxMenuBar" name="main_menu_bar">
+      <object class="wxMenu" name="file_menu">
+        <label>File</label>
+        <object class="wxMenuItem" name="menu_save">
+          <label>Save</label>
+          <accel>ctrl+s</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_load">
+          <label>Load</label>
+          <accel>ctrl+l</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_quit">
+          <label>Quit</label>
+          <accel>ctrl+q</accel>
+        </object>
+      </object>
+      <object class="wxMenu" name="browse_menu">
+        <label>Browse</label>
+        <object class="wxMenuItem" name="menu_browse_prep">
+          <label>Browse Prep/Source Dir</label>
+          <accel>ctrl+p</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_browse_dest">
+          <label>Browse Destination Dir</label>
+          <accel>ctrl+d</accel>
+        </object>
+      </object>
+      <object class="wxMenu" name="menu_course">
+        <label>Course</label>
+        <object class="wxMenuItem" name="menu_course_1">
+          <label>Course 1: ME 450</label>
+          <accel>ctrl+1</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_course_2">
+          <label>Course 2: ME 458</label>
+          <accel>ctrl+2</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_make_folder">
+          <label>Make Lecture Date Folder</label>
+          <accel>ctrl+m</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_copy">
+          <label>Copy from Src to Dest</label>
+          <accel>ctrl+c</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_make_index_dest">
+          <label>Make Index for Dest. Dir.</label>
+          <accel>ctrl+i</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_make_index_src">
+          <label>Make Index for Src. Dir.</label>
+          <accel>ctrl+shift+i</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_make_outline">
+          <label>Make Lecture Outline</label>
+          <accel>ctrl+o</accel>
+        </object>
+      </object>
+      <object class="wxMenu" name="menu_terminal">
+        <label>Terminal</label>
+        <object class="wxMenuItem" name="menu_terminal_dest">
+          <label>Open Terminal in Dest. Dir.</label>
+          <accel>ctrl+t</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_terminal_src">
+          <label>Open Terminal in Src. Dir.</label>
+          <accel>ctrl+shift+t</accel>
+        </object>
+      </object>
+      <object class="wxMenu" name="menu_build">
+        <label>Build</label>
+        <object class="wxMenuItem" name="menu_sphinx_build">
+          <label>sphinx-build website</label>
+          <accel>ctrl+b</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_rst2lecture_outline">
+          <label>rst2lecture_outlne</label>
+          <accel>ctrl+r</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_rst2html_src">
+          <label>rst2html source index</label>
+          <accel>ctrl+shift+r</accel>
+        </object>
+      </object>
+      <object class="wxMenu" name="menu_open">
+        <label>Open</label>
+        <object class="wxMenuItem" name="menu_view_html_dest">
+          <label>View HTML Dest. Dir.</label>
+          <accel>ctrl+h</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_view_html_src">
+          <label>View HTML Src. Dir</label>
+          <accel>ctrl+shift+h</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_emacs_dest_index">
+          <label>Emacs Dest. Index</label>
+          <accel>ctrl+e</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_emacs_src_index">
+          <label>Emacs Source Index</label>
+          <accel>ctrl+shift+e</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_emacs_exclude_outline">
+          <label>Emacs exclude/outline.rst</label>
+          <accel>ctrl+alt+e</accel>
+        </object>
+      </object>
+    </object>
+  </object>
+</resource>
