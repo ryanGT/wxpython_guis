@@ -145,6 +145,41 @@
           <border>5</border>
         </object>
         <object class="sizeritem">
+          <object class="wxPanel" name="dest_info_panel">
+            <object class="wxBoxSizer">
+              <orient>wxVERTICAL</orient>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="dest_lecture_num_label">
+                  <label>Destination Lecture Number</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="dest_lecture_number_box"/>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText" name="dest_lecture_title_label">
+                  <label>Destination Lecture Title</label>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="dest_lecture_title_box">
+                  <size>400,-1</size>
+                </object>
+                <flag>wxLEFT|wxRIGHT</flag>
+                <border>5</border>
+              </object>
+            </object>
+          </object>
+          <flag>wxALL</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
           <object class="wxPanel" name="copy_panel">
             <object class="wxBoxSizer">
               <object class="sizeritem">
@@ -165,6 +200,22 @@
             </object>
           </object>
           <flag>wxALIGN_CENTRE_HORIZONTAL</flag>
+        </object>
+        <object class="sizeritem">
+          <object class="wxPanel" name="go_panel">
+            <object class="wxBoxSizer">
+              <orient>wxHORIZONTAL</orient>
+              <object class="sizeritem">
+                <object class="wxButton" name="go_button">
+                  <label>Go</label>
+                </object>
+                <flag>wxALL|wxALIGN_CENTRE_HORIZONTAL</flag>
+                <border>5</border>
+              </object>
+            </object>
+          </object>
+          <flag>wxALL|wxALIGN_CENTRE_HORIZONTAL</flag>
+          <border>5</border>
         </object>
       </object>
     </object>
@@ -225,6 +276,14 @@
           <label>Make Lecture Outline</label>
           <accel>ctrl+o</accel>
         </object>
+        <object class="wxMenuItem" name="menu_append_lectures_rst">
+          <label>Append lectures.rst</label>
+          <accel>ctrl+a</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_go">
+          <label>Go</label>
+          <accel>ctrl+g</accel>
+        </object>
       </object>
       <object class="wxMenu" name="menu_terminal">
         <label>Terminal</label>
@@ -262,6 +321,10 @@
           <label>View HTML Src. Dir</label>
           <accel>ctrl+shift+h</accel>
         </object>
+        <object class="wxMenuItem" name="menu_outline_exclude_s5">
+          <label>View HTML exclude/outlne_s5</label>
+          <accel>ctrl+alt+h</accel>
+        </object>
         <object class="wxMenuItem" name="menu_emacs_dest_index">
           <label>Emacs Dest. Index</label>
           <accel>ctrl+e</accel>
@@ -273,6 +336,14 @@
         <object class="wxMenuItem" name="menu_emacs_exclude_outline">
           <label>Emacs exclude/outline.rst</label>
           <accel>ctrl+alt+e</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_finder_dest">
+          <label>Finder open dest. dir.</label>
+          <accel>ctrl+f</accel>
+        </object>
+        <object class="wxMenuItem" name="menu_finder_src">
+          <label>Finder open source dir.</label>
+          <accel>ctrl+shift+f</accel>
         </object>
       </object>
     </object>
