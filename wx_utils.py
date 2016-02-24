@@ -85,8 +85,11 @@ class gui_that_saves(object):
                 value = control.GetValue()
             elif hasattr(control, 'GetSelection'):
                 value = str(control.GetSelection())
+            ## if value.find('Ryan') > -1:
+            ##     import pdb
+            ##     pdb.set_trace()
             cur_xml = ET.SubElement(xml_root, attr)
-            cur_xml.text = value.encode()
+            cur_xml.text = value#.encode('UTF-8')
 
         self.xml = xml_root
 
@@ -97,6 +100,8 @@ class gui_that_saves(object):
         for attr, val in mydict.iteritems():
             control = getattr(self, attr)
             if hasattr(control, 'SetValue'):
+                if val is None:
+                    val = u''
                 control.SetValue(val)
             elif hasattr(control, 'SetSelection'):
                 control.SetSelection(int(val))

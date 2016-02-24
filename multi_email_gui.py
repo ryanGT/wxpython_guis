@@ -102,7 +102,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
                             
     ##         inds = self.plot_name_list_box.GetSelections()
     ##         params_xml = ET.SubElement(root, 'gui_params')
-    ##         plot_name = self.plot_name_ctrl.GetValue().encode()
+    ##         plot_name = self.plot_name_ctrl.GetValue().encode('UTF-8')
     ##         inds_str = str(list(inds))
     ##         sel = self.td_bode_notebook.GetSelection()
     ##         if sel == 0:
@@ -188,6 +188,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.create_xml('multi_email_gui', control_attr_list)
 
         print('xml_path = ' + xml_path)
+        #import pdb
+        #pdb.set_trace()
         xml_utils.write_pretty_xml(self.xml, xml_path)
 
 
@@ -251,13 +253,13 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
             
 
     def build_email_text(self, firstname):
-        line1 = self.greeting_box.GetValue().encode() % firstname
+        line1 = self.greeting_box.GetValue().encode('UTF-8') % firstname
 
-        body = self.body_box.GetValue().encode()
+        body = self.body_box.GetValue().encode('UTF-8')
 
-        closing = self.closing_box.GetValue().encode()
+        closing = self.closing_box.GetValue().encode('UTF-8')
 
-        sig = self.signature_box.GetValue().encode()
+        sig = self.signature_box.GetValue().encode('UTF-8')
 
         text = line1 + '\n\n' + body + '\n\n' + closing + '\n\n' + \
                sig
@@ -290,7 +292,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
             first_names = self.first_names
             emails = self.emails
 
-        subject = self.subject_box.GetValue().encode()
+        subject = self.subject_box.GetValue().encode('UTF-8')
 
         N = len(emails)
         n_list = range(N)
