@@ -273,7 +273,7 @@ class figure_parser(plot_description_file_parser):
             body = children[0]
             return body
         else:
-            raise ValueError, "Not sure how to proceed for a figure with tag %s" % self.root.tag
+            raise ValueError("Not sure how to proceed for a figure with tag %s" % self.root.tag)
 
         
     def parse(self):
@@ -287,8 +287,7 @@ class figure_parser(plot_description_file_parser):
         elif self.class_name == 'bode_figure':
             self.myclass = bode_figure
         else:
-            raise ValueError, \
-                  "Not sure what to do with figure type %s" % self.class_name
+            raise ValueError("Not sure what to do with figure type %s" % self.class_name)
         name_xml = xml_utils.find_child(body, 'name')
         self.name = name_xml.text.strip()
         

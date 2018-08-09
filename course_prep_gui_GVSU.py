@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function
+#from __future__ import print_function
 
 # Used to guarantee to use at least Wx2.8
 #import wxversion
@@ -20,7 +20,8 @@ xml_wildcard = "XML files (*.xml)|*.xml"
 
 import re
 
-from lecture_wx_utils import *
+from lecture_wx_utils import course_roots, lecture_roots
+template_dir = '/Users/kraussry/gdrive_teaching/general_teaching/lecture_templates'
 
 import file_finder
 
@@ -132,6 +133,14 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         return out_dir
 
 
+    def get_lectures_dir(self):
+        course = self.get_course()
+        course_dir = lecture_roots[course]
+        out_dir = os.path.realpath(course_dir)#<-- do I want this?  or
+                                              #trust good paths in lecture_wx_utils?
+        return out_dir
+        
+
     def on_browse(self, event=None):
         course_dir = self.get_course_dir()
         folder_path = wx_utils.my_dir_dialog(parent=None,\
@@ -148,7 +157,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
 
     def get_subfolder(self):
-        course_dir = self.get_course_dir()
+        #course_dir = self.get_course_dir()
         lecture_title = self.lecture_title_box.GetValue()
         subfolder = rwkos.clean_filename(lecture_title)
         lect_num = int(self.get_lecture_number())
@@ -177,7 +186,26 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
     def next_lecture(self, event=None):
         self.lecture_title_box.SetValue("")
         self.set_lecture_number()
-        
+
+
+    def prep_and_copy_slides_main_tex(self, title, lect_folder, \
+                                      lectnum, coursenum):
+        lectnum_str = '%0.2i' % lectnum
+        repdict = {'%%TITLE%%': title, \
+                   '%%LECTNUM%%': str(lectnum_str), \
+                   '%%COURSENUM%%': str(coursenum)}
+        inpath = os.path.join(template_dir, 'slides_main_template.tex')
+        curfile = txt_mixin.txt_file_with_list(inpath)
+        for key, value in repdict.items():
+            curfile.replaceall(key, value)
+
+        outname = 'lecture_%0.2i_slides_main.tex' % lectnum
+        outpath = os.path.join(lect_folder, outname)
+        if not os.path.exists(outpath):
+            curfile.save(outpath)
+        else:
+            print('file already exists: %s' % outpath)
+
 
     def go(self, event=None):
         # 0. check for valid entries
@@ -193,27 +221,36 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         subfolder = self.get_subfolder()
         print('subfolder = ' + subfolder)
         rp = self.root_folder_box.GetValue()
-        path1 = os.path.join(self.get_course_dir(), rp)
-        subfolder_path = os.path.join(path1, subfolder)
-        if not os.path.exists(subfolder_path):
-            os.mkdir(subfolder_path)
+        path1 = os.path.join(self.get_lectures_dir(), rp)
+        lect_folder_path = os.path.join(path1, subfolder)
+        print('lect_folder_path = %s' % lect_folder_path)
+        rwkos.make_dir(lect_folder_path)
+        coursenum = self.coursechoice.GetStringSelection()
+        lectnum = int(self.get_lecture_number())
+        title = self.lecture_title_box.GetValue()
+        lect_num = int(self.get_lecture_number())
+        self.prep_and_copy_slides_main_tex(title, lect_folder_path, \
+                                           lectnum, coursenum)
+
+        #if not os.path.exists(subfolder_path):
+        #    os.mkdir(subfolder_path)
 
         course = self.get_course()
-        rst_name = 'ME_%s_%s.rst' % (course, subfolder)
-        print('rst_name = ' + rst_name)
-        rst_path = os.path.join(subfolder_path, rst_name)
-        print('rst_path = ' + rst_path)
+        ## rst_name = 'ME_%s_%s.rst' % (course, subfolder)
+        ## print('rst_name = ' + rst_name)
+        ## rst_path = os.path.join(subfolder_path, rst_name)
+        ## print('rst_path = ' + rst_path)
 
-        rst_list = self.build_rst()
+        ## rst_list = self.build_rst()
 
-        txt_mixin.dump(rst_path, rst_list)
+        ## txt_mixin.dump(rst_path, rst_list)
             
         
         
     def OnInit(self):
         """Initialize the :py:class:`MyApp` instance; start by loading
         the xrc resource file and then add other stuff and bind the events"""
-        xrcfile = 'course_prep_xrc2.xrc'
+        xrcfile = 'course_prep_xrc_GVSU.xrc'
         self.res = xrc.XmlResource(xrcfile)
 
         # main frame and panel ---------
@@ -222,6 +259,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.panel = xrc.XRCCTRL(self.frame,"main_panel")
 
         self.coursechoice = xrc.XRCCTRL(self.frame,"course_choice")
+        self.coursechoice.SetStringSelection('345')
         self.lecture_number_box = xrc.XRCCTRL(self.frame,"lecture_number_box")
         self.root_folder_box = xrc.XRCCTRL(self.frame,"root_folder_box")
         self.root_browse = xrc.XRCCTRL(self.frame, "root_browse")
@@ -246,6 +284,16 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
                         id=xrc.XRCID('menu_save'))
         self.frame.Bind(wx.EVT_MENU, self.load, \
                         id=xrc.XRCID('menu_load'))
+        self.frame.Bind(wx.EVT_MENU, self.go, \
+                        id=xrc.XRCID('menu_go'))
+
+        # set up accelerators
+        accelEntries = []
+        accelEntries.append((wx.ACCEL_CTRL, ord('G'), xrc.XRCID("menu_go")))
+        #accelEntries.append((wx.ACCEL_CTRL, ord('S'), xrc.XRCID("file_save_menu")))
+
+        accelTable  = wx.AcceleratorTable(accelEntries)
+        self.frame.SetAcceleratorTable(accelTable)
 
 
         ## self.frame.Bind(wx.EVT_MENU, self.load, \
