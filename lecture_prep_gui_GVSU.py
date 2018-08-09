@@ -5,7 +5,7 @@
 #import wxversion
 #wxversion.ensureMinimal('2.8')
 
-import sys, time, os, gc
+import sys, time, os, gc, glob, shutil
 
 import wx
 import wx.xrc as xrc
@@ -48,25 +48,36 @@ Students will
 """
 
 def suggest_lecture_number(course):
-    course_root = course_roots[course]
-    glob_pat = 'ME*%s*lecture*.rst' % course
-    myfinder = file_finder.Glob_File_Finder(course_root,glob_pat)
-    myfinder.Find_All_Files()
+    lectures_root = lecture_roots[course]
+    glob_pat = os.path.join(lectures_root, 'lecture_*')
+    all_matches = glob.glob(glob_pat)
+    lect_pat = re.compile('lecture_([0-9]+)_')
+
+    if not all_matches:
+        return 1
 
     lect_ints = []
-
-    if not lect_ints:
-        return 1
     
-    for curpath in myfinder.all_files:
+    for curpath in all_matches:
         folder, curfile = os.path.split(curpath)
-        q = p1.search(curfile)
+        q = lect_pat.search(curfile)
         if q is not None:
-            cur_int = int(q.group(2))
+            cur_int = int(q.group(1))
             lect_ints.append(cur_int)
 
     return max(lect_ints)+1
-                          
+
+
+def find_and_replace_one_file(inpath, outpath, repdict):
+    curfile = txt_mixin.txt_file_with_list(inpath)
+    for key, value in repdict.items():
+        curfile.replaceall(key, value)
+
+    if not os.path.exists(outpath):
+        curfile.save(outpath)
+    else:
+        print('file already exists: %s' % outpath)
+
 
 
 class MyApp(wx.App, wx_utils.gui_that_saves):
@@ -188,23 +199,51 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.set_lecture_number()
 
 
-    def prep_and_copy_slides_main_tex(self, title, lect_folder, \
-                                      lectnum, coursenum):
+    def build_repdict(self):
+        """Find the values that need to be replaced in lecture
+        template tex and md files and put them in a dictionary for
+        find and replace."""
+        subfolder = self.get_subfolder()
+        print('subfolder = ' + subfolder)
+        rp = self.root_folder_box.GetValue()
+        path1 = os.path.join(self.get_lectures_dir(), rp)
+        lect_folder_path = os.path.join(path1, subfolder)
+        print('lect_folder_path = %s' % lect_folder_path)
+        self.lect_folder_path = lect_folder_path
+        self.subfolder = subfolder
+        coursenum = self.coursechoice.GetStringSelection()
+        lectnum = int(self.get_lecture_number())
+        self.lectnum = lectnum
+        title = self.lecture_title_box.GetValue()
+        lect_num = int(self.get_lecture_number())
+
         lectnum_str = '%0.2i' % lectnum
         repdict = {'%%TITLE%%': title, \
                    '%%LECTNUM%%': str(lectnum_str), \
                    '%%COURSENUM%%': str(coursenum)}
-        inpath = os.path.join(template_dir, 'slides_main_template.tex')
-        curfile = txt_mixin.txt_file_with_list(inpath)
-        for key, value in repdict.items():
-            curfile.replaceall(key, value)
+        self.repdict = repdict
+        return repdict
 
-        outname = 'lecture_%0.2i_slides_main.tex' % lectnum
-        outpath = os.path.join(lect_folder, outname)
+        
+    def prep_and_copy_slides_main_tex(self):
+        inpath = os.path.join(template_dir, 'slides_main_template.tex')
+        outname = 'lecture_%0.2i_slides_main.tex' % self.lectnum
+        outpath = os.path.join(self.lect_folder_path, outname)
+        find_and_replace_one_file(inpath, outpath, self.repdict)
+
+
+    def prep_and_copy_top_level_md(self):
+        inpath = os.path.join(template_dir, 'top_level_outline_template.md')
+        outname = 'lecture_%0.2i_top_level_outline.md' % self.lectnum
+        outpath = os.path.join(self.lect_folder_path, outname)
+        find_and_replace_one_file(inpath, outpath, self.repdict)
+
+
+    def copy_mydefs_sty(self):
+        inpath = os.path.join(template_dir, 'mydefs.sty')
+        outpath = os.path.join(self.lect_folder_path, 'mydefs.sty')
         if not os.path.exists(outpath):
-            curfile.save(outpath)
-        else:
-            print('file already exists: %s' % outpath)
+            shutil.copyfile(inpath, outpath)
 
 
     def go(self, event=None):
@@ -218,20 +257,11 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         #    - add beamer handout header
         #    - add author
         #    - add learning outcomes slide
-        subfolder = self.get_subfolder()
-        print('subfolder = ' + subfolder)
-        rp = self.root_folder_box.GetValue()
-        path1 = os.path.join(self.get_lectures_dir(), rp)
-        lect_folder_path = os.path.join(path1, subfolder)
-        print('lect_folder_path = %s' % lect_folder_path)
-        rwkos.make_dir(lect_folder_path)
-        coursenum = self.coursechoice.GetStringSelection()
-        lectnum = int(self.get_lecture_number())
-        title = self.lecture_title_box.GetValue()
-        lect_num = int(self.get_lecture_number())
-        self.prep_and_copy_slides_main_tex(title, lect_folder_path, \
-                                           lectnum, coursenum)
-
+        repdict = self.build_repdict()
+        rwkos.make_dir(self.lect_folder_path)#<-- variable set in build_repdict()
+        self.prep_and_copy_slides_main_tex()
+        self.prep_and_copy_top_level_md()
+        self.copy_mydefs_sty()
         #if not os.path.exists(subfolder_path):
         #    os.mkdir(subfolder_path)
 
@@ -250,7 +280,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
     def OnInit(self):
         """Initialize the :py:class:`MyApp` instance; start by loading
         the xrc resource file and then add other stuff and bind the events"""
-        xrcfile = 'course_prep_xrc_GVSU.xrc'
+        xrcfile = '/Users/kraussry/git/wxpython_guis/lecture_prep_xrc_GVSU.xrc'
         self.res = xrc.XmlResource(xrcfile)
 
         # main frame and panel ---------
