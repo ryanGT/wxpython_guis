@@ -31,18 +31,18 @@ input_dict = {'finite_width_pulse':['t_on','t_off','amp'], \
 common_params = ['max_T']#<---- should swept_sine have a max_T rather than tspan? (just get rid of tspan?)
 defaults_dict = {'max_T':2.0, 't_on':0.1, 'amp':100}
 
-for key, val in input_dict.iteritems():
+for key, val in input_dict.items():
     val.extend(common_params)
     input_dict[key] = val#don't sure if this is necessary since val
                          #is a reference to a list
 
 
-sorted_inputs = sorted(input_dict.iterkeys())
+sorted_inputs = sorted(input_dict.keys())
 
 
 def validate_dict(dict_in):
     all_good = True
-    for key, val in dict_in.iteritems():
+    for key, val in dict_in.items():
         if (val is None) or (val == ''):
             all_good = False
             wx.MessageBox('Empty value for parameter %s' % key)
@@ -58,7 +58,7 @@ class input_params_panel(panel_with_params_grid):
         defaults = [None]*N
         starting_dict = dict(zip(params_list, defaults))
 
-        for key, val in defaults_dict.iteritems():
+        for key, val in defaults_dict.items():
             if starting_dict.has_key(key):
                 starting_dict[key] = val
         
@@ -76,7 +76,7 @@ class input_params_panel(panel_with_params_grid):
         case = self.input_choice.GetStringSelection()
         #pdb.set_trace()
         mydict = self.build_params_dict()
-        for key, val in mydict.iteritems():
+        for key, val in mydict.items():
             val = xml_utils.try_string_to_number(val)
             mydict[key] = val
             

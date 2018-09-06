@@ -57,7 +57,7 @@ output_opts = ['show_output_arrows','output_distances','output_angles','output_l
 
 required_opts = common_props
 
-for key, val in block_params.iteritems():
+for key, val in block_params.items():
     val.extend(common_props)
     block_params[key] = val#don't sure if this is necessary since val
         #is a reference to a list
@@ -71,7 +71,7 @@ copy_opts = ['input'] + common_props + output_opts + relative_props + abs_props
 tikz_opts = ['position_type','show_outputs','tikz_block_options'] + \
             output_opts + relative_props + abs_props
 
-sorted_blocks = sorted(block_params.iterkeys())
+sorted_blocks = sorted(block_params.keys())
 
 
 class params_grid_and_listbox_panel(panel_with_params_grid, \

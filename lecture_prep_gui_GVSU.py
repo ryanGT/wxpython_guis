@@ -12,7 +12,7 @@ import wx.xrc as xrc
 
 import wx.grid
 
-import wx_utils, relpath, rst_creator, rwkos, txt_mixin
+import wx_utils, relpath, rst_creator, rwkos, txt_mixin, txt_database, datetime
 import xml_utils
 from xml_utils import prettify
 
@@ -46,6 +46,13 @@ Learning Outcomes
 Students will
 
 """
+
+
+# build dictionary to look up date from lecture number
+dates_path = '/Users/kraussry/gdrive_teaching/345_F18/lectures/dates_look_up.tsv'
+datesdb = txt_database.txt_database_from_file(dates_path)
+dates_dict =  dict(zip(datesdb.Class, datesdb.Date))
+
 
 def suggest_lecture_number(course):
     lectures_root = lecture_roots[course]
@@ -118,7 +125,27 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
     def get_title(self):
         title = self.lecture_title_box.GetValue()
         return title.encode()
-    
+
+
+    def guess_date(self):
+        lect_num_str = self.lecture_number_box.GetValue()
+        date_str_1 = dates_dict[lect_num_str]#<-- month/day
+        #get year str
+        now = datetime.datetime.now()
+        year_str = str(now.year)[-2:]
+        full_date_str = '%s/%s' % (date_str_1, year_str)
+        return full_date_str
+        
+
+    def set_date_str(self):
+        lect_num_str = self.lecture_number_box.GetValue()
+        if lect_num_str:
+            self.lecture_date_box.SetValue(self.guess_date())
+            
+
+    def get_date_str(self):
+        dstr = self.lecture_date_box.GetValue()
+        return dstr
         
     def set_lecture_number(self):
         course = self.get_course()
@@ -165,7 +192,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         
     def my_init(self):
         self.set_lecture_number()
-
+        self.set_date_str()
 
     def get_subfolder(self):
         #course_dir = self.get_course_dir()
@@ -216,11 +243,16 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.lectnum = lectnum
         title = self.lecture_title_box.GetValue()
         lect_num = int(self.get_lecture_number())
-
-        lectnum_str = '%0.2i' % lectnum
+        date_str = self.get_date_str()
+        
+        #lectnum_str = '%0.2i' % lectnum
+        lectnum_str = '%i' % lectnum
+        two_dig_lectnum = '%0.2i' % lectnum
         repdict = {'%%TITLE%%': title, \
                    '%%LECTNUM%%': str(lectnum_str), \
-                   '%%COURSENUM%%': str(coursenum)}
+                   '%%TWODIGITLECTNUM%%': str(two_dig_lectnum), \
+                   '%%COURSENUM%%': str(coursenum), \
+                   '%%DATE%%':date_str}
         self.repdict = repdict
         return repdict
 
@@ -239,6 +271,27 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         find_and_replace_one_file(inpath, outpath, self.repdict)
 
 
+    def prep_and_copy_graph_paper(self):
+        inpath = os.path.join(template_dir, 'graph_paper.tex')
+        outname = 'graph_paper_lecture_%0.2i.tex' % self.lectnum
+        outpath = os.path.join(self.lect_folder_path, outname)
+        find_and_replace_one_file(inpath, outpath, self.repdict)
+        curdir = os.getcwd()
+        try:
+            os.chdir(self.lect_folder_path)
+            cmd = 'pdflatex %s' % outname
+            os.system(cmd)
+        finally:
+            os.chdir(curdir)
+            
+
+    def prep_and_copy_notes_md(self):
+        inpath = os.path.join(template_dir, 'notes_after_lecture_template.md')
+        outname = 'notes_after_lecture_%0.2i.md' % self.lectnum
+        outpath = os.path.join(self.lect_folder_path, outname)
+        find_and_replace_one_file(inpath, outpath, self.repdict)
+
+        
     def copy_mydefs_sty(self):
         inpath = os.path.join(template_dir, 'mydefs.sty')
         outpath = os.path.join(self.lect_folder_path, 'mydefs.sty')
@@ -261,6 +314,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         rwkos.make_dir(self.lect_folder_path)#<-- variable set in build_repdict()
         self.prep_and_copy_slides_main_tex()
         self.prep_and_copy_top_level_md()
+        self.prep_and_copy_notes_md()
+        self.prep_and_copy_graph_paper()
         self.copy_mydefs_sty()
         #if not os.path.exists(subfolder_path):
         #    os.mkdir(subfolder_path)
@@ -275,6 +330,9 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
         ## txt_mixin.dump(rst_path, rst_list)
             
+
+    def OnActivate(self, evt):
+        self.lecture_title_box.SetFocus()
         
         
     def OnInit(self):
@@ -291,11 +349,13 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.coursechoice = xrc.XRCCTRL(self.frame,"course_choice")
         self.coursechoice.SetStringSelection('345')
         self.lecture_number_box = xrc.XRCCTRL(self.frame,"lecture_number_box")
+        self.lecture_date_box = xrc.XRCCTRL(self.frame,"lecture_date_box")
         self.root_folder_box = xrc.XRCCTRL(self.frame,"root_folder_box")
         self.root_browse = xrc.XRCCTRL(self.frame, "root_browse")
         self.go_button = xrc.XRCCTRL(self.frame, "go_button")
         self.next_button = xrc.XRCCTRL(self.frame, "next_button")
         self.lecture_title_box = xrc.XRCCTRL(self.frame, "lecture_title_box")
+        self.lecture_title_box.SetFocus()
         
         wx.EVT_CHOICE(self.coursechoice, self.coursechoice.GetId(), \
                       self.on_course_choice)
@@ -310,17 +370,13 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         ## self.frame.Bind(wx.EVT_MENU, self.on_exit, \
         ##                 id=xrc.XRCID('quit_menu_item'))
 
-        self.frame.Bind(wx.EVT_MENU, self.save, \
-                        id=xrc.XRCID('menu_save'))
-        self.frame.Bind(wx.EVT_MENU, self.load, \
-                        id=xrc.XRCID('menu_load'))
         self.frame.Bind(wx.EVT_MENU, self.go, \
                         id=xrc.XRCID('menu_go'))
-
+        self.frame.Bind(wx.EVT_ACTIVATE, self.OnActivate)
+        
         # set up accelerators
         accelEntries = []
         accelEntries.append((wx.ACCEL_CTRL, ord('G'), xrc.XRCID("menu_go")))
-        #accelEntries.append((wx.ACCEL_CTRL, ord('S'), xrc.XRCID("file_save_menu")))
 
         accelTable  = wx.AcceleratorTable(accelEntries)
         self.frame.SetAcceleratorTable(accelTable)

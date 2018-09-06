@@ -36,6 +36,18 @@
           <border>5</border>
         </object>
         <object class="sizeritem">
+          <object class="wxStaticText" name="lecture_date_label">
+            <label>Lecture Date</label>
+          </object>
+          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxTextCtrl" name="lecture_date_box"/>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
           <object class="wxButton" name="next_button">
             <label>Next</label>
           </object>
@@ -89,17 +101,9 @@
     <object class="wxMenuBar" name="main_menu">
       <object class="wxMenu" name="file_menu">
         <label>File</label>
-        <object class="wxMenuItem" name="menu_save">
-          <label>Save</label>
-          <accel>ctrl+s</accel>
-        </object>
-        <object class="wxMenuItem" name="menu_load">
-          <label>Load</label>
-          <accel>ctrl+l</accel>
-        </object>
         <object class="wxMenuItem" name="menu_go">
           <label>Go</label>
-          <accel>ctrl+l</accel>
+          <accel>ctrl+g</accel>
         </object>
       </object>
     </object>
