@@ -21,6 +21,8 @@ for key, value in course_roots.items():
     lecture_roots[key] = lfolder
     
 
+lab_root = '/Users/kraussry/gdrive_teaching/345_F18/lab/'
+
 course_class_dict = {}
 
 

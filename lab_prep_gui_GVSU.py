@@ -20,8 +20,8 @@ xml_wildcard = "XML files (*.xml)|*.xml"
 
 import re
 
-from lecture_wx_utils import course_roots, lecture_roots
-template_dir = '/Users/kraussry/gdrive_teaching/general_teaching/lecture_templates'
+from lecture_wx_utils import course_roots, lecture_roots, lab_root
+template_dir = '/Users/kraussry/gdrive_teaching/general_teaching/lab_templates'
 
 import file_finder
 
@@ -31,7 +31,7 @@ template = """=====================
     RC Circuit Modeling
 =====================
 
-ME 458 Lecture 6
+ME 458 Lab 6
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 :Author: Dr. Ryan Krauss
@@ -48,31 +48,24 @@ Students will
 """
 
 
-# build dictionary to look up date from lecture number
-dates_path = '/Users/kraussry/gdrive_teaching/345_F18/lectures/dates_look_up.tsv'
-datesdb = txt_database.txt_database_from_file(dates_path)
-dates_dict =  dict(zip(datesdb.Class, datesdb.Date))
-
-
-def suggest_lecture_number(course):
-    lectures_root = lecture_roots[course]
-    glob_pat = os.path.join(lectures_root, 'lecture_*')
+def suggest_lab_number(course):
+    glob_pat = os.path.join(lab_root, 'lab_*')
     all_matches = glob.glob(glob_pat)
-    lect_pat = re.compile('lecture_([0-9]+)_')
+    lab_pat = re.compile('lab_([0-9]+)_')
 
     if not all_matches:
         return 1
 
-    lect_ints = []
+    lab_ints = []
     
     for curpath in all_matches:
         folder, curfile = os.path.split(curpath)
-        q = lect_pat.search(curfile)
+        q = lab_pat.search(curfile)
         if q is not None:
             cur_int = int(q.group(1))
-            lect_ints.append(cur_int)
+            lab_ints.append(cur_int)
 
-    return max(lect_ints)+1
+    return max(lab_ints)+1
 
 
 def find_and_replace_one_file(inpath, outpath, repdict):
@@ -98,8 +91,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         ##                                    wildcard=xml_wildcard, \
         ##                                    )
 
-        control_attr_list = ['coursechoice','lecture_number_box','root_folder_box',\
-                             'lecture_title_box']
+        control_attr_list = ['coursechoice','lab_number_box','root_folder_box',\
+                             'lab_title_box']
         self.create_xml('course_prep_gui', control_attr_list)
         
         print('xml_path = ' + xml_path)
@@ -123,61 +116,34 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
 
     def get_title(self):
-        title = self.lecture_title_box.GetValue()
+        title = self.lab_title_box.GetValue()
         return title.encode()
 
 
-    def guess_date(self):
-        lect_num_str = self.lecture_number_box.GetValue()
-        date_str_1 = dates_dict[lect_num_str]#<-- month/day
-        #get year str
-        now = datetime.datetime.now()
-        year_str = str(now.year)[-2:]
-        full_date_str = '%s/%s' % (date_str_1, year_str)
-        return full_date_str
-        
-
-    def set_date_str(self):
-        lect_num_str = self.lecture_number_box.GetValue()
-        if lect_num_str:
-            self.lecture_date_box.SetValue(self.guess_date())
-            
-
-    def get_date_str(self):
-        dstr = self.lecture_date_box.GetValue()
-        return dstr
-        
-    def set_lecture_number(self):
+    def set_lab_number(self):
         course = self.get_course()
         #print('course = %s' % course)
-        new_num = suggest_lecture_number(course)
-        self.lecture_number_box.SetValue(str(new_num))
+        new_num = suggest_lab_number(course)
+        self.lab_number_box.SetValue(str(new_num))
 
 
-    def get_lecture_number(self):
-        lect_num_str = self.lecture_number_box.GetValue()
-        return lect_num_str
+    def get_lab_number(self):
+        lab_num_str = self.lab_number_box.GetValue()
+        return lab_num_str
         
         
     def on_course_choice(self, event):
         print('hello from on_course_choice')
-        self.set_lecture_number()
+        self.set_lab_number()
 
 
     def get_course_dir(self):
         course = self.get_course()
-        course_dir = course_roots[course]
+        course_dir = course_root[course]
         out_dir = os.path.realpath(course_dir)
         return out_dir
 
 
-    def get_lectures_dir(self):
-        course = self.get_course()
-        course_dir = lecture_roots[course]
-        out_dir = os.path.realpath(course_dir)#<-- do I want this?  or
-                                              #trust good paths in lecture_wx_utils?
-        return out_dir
-        
 
     def on_browse(self, event=None):
         course_dir = self.get_course_dir()
@@ -191,15 +157,15 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
         
     def my_init(self):
-        self.set_lecture_number()
-        self.set_date_str()
+        self.set_lab_number()
+
 
     def get_subfolder(self):
         #course_dir = self.get_course_dir()
-        lecture_title = self.lecture_title_box.GetValue()
-        subfolder = rwkos.clean_filename(lecture_title)
-        lect_num = int(self.get_lecture_number())
-        subfolder_out = 'lecture_%0.2i_%s' % (lect_num, subfolder)
+        lab_title = self.lab_title_box.GetValue()
+        subfolder = rwkos.clean_filename(lab_title)
+        lab_num = int(self.get_lab_number())
+        subfolder_out = 'lab_%0.2i_%s' % (lab_num, subfolder)
         return subfolder_out
 
 
@@ -210,8 +176,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         myfile.add_title(title)
 
         course = self.get_course()
-        lect_num = int(self.get_lecture_number())
-        subtitle = 'ME %s Lecture %s' % (course, lect_num)
+        lab_num = int(self.get_lab_number())
+        subtitle = 'ME %s Lab %s' % (course, lab_num)
         subtitle = subtitle.encode()
         myfile.add_subtitle(subtitle)
         myfile.add_body(':Author: Dr. Ryan Krauss')
@@ -221,97 +187,55 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         return myfile.list
 
 
-    def next_lecture(self, event=None):
-        self.lecture_title_box.SetValue("")
-        self.set_lecture_number()
+    def next_lab(self, event=None):
+        self.lab_title_box.SetValue("")
+        self.set_lab_number()
 
 
     def build_repdict(self):
-        """Find the values that need to be replaced in lecture
+        """Find the values that need to be replaced in lab
         template tex and md files and put them in a dictionary for
         find and replace."""
         subfolder = self.get_subfolder()
         print('subfolder = ' + subfolder)
         rp = self.root_folder_box.GetValue()
-        path1 = os.path.join(self.get_lectures_dir(), rp)
-        lect_folder_path = os.path.join(path1, subfolder)
-        print('lect_folder_path = %s' % lect_folder_path)
-        self.lect_folder_path = lect_folder_path
+        path1 = os.path.join(lab_root, rp)
+        lab_folder_path = os.path.join(path1, subfolder)
+        print('lab_folder_path = %s' % lab_folder_path)
+        self.lab_folder_path = lab_folder_path
         self.subfolder = subfolder
         coursenum = self.coursechoice.GetStringSelection()
-        lectnum = int(self.get_lecture_number())
-        self.lectnum = lectnum
-        title = self.lecture_title_box.GetValue()
-        lect_num = int(self.get_lecture_number())
-        date_str = self.get_date_str()
+        labnum = int(self.get_lab_number())
+        self.labnum = labnum
+        title = self.lab_title_box.GetValue()
+        lab_num = int(self.get_lab_number())
         
-        #lectnum_str = '%0.2i' % lectnum
-        lectnum_str = '%i' % lectnum
-        two_dig_lectnum = '%0.2i' % lectnum
+        #labnum_str = '%0.2i' % labnum
+        labnum_str = '%i' % labnum
+        two_dig_labnum = '%0.2i' % labnum
         repdict = {'%%TITLE%%': title, \
-                   '%%LECTNUM%%': str(lectnum_str), \
-                   '%%TWODIGITLECTNUM%%': str(two_dig_lectnum), \
+                   '%%LABNUM%%': str(labnum_str), \
+                   '%%TWODIGITLABNUM%%': str(two_dig_labnum), \
                    '%%COURSENUM%%': str(coursenum), \
-                   '%%DATE%%':date_str}
+                   }
         self.repdict = repdict
         return repdict
 
         
-    def prep_and_copy_slides_main_tex(self):
-        inpath = os.path.join(template_dir, 'slides_main_template.tex')
-        outname = 'lecture_%0.2i_slides_main.tex' % self.lectnum
-        outpath = os.path.join(self.lect_folder_path, outname)
+    def prep_and_copy_procedure(self):
+        inpath = os.path.join(template_dir, 'lab_procedure.md')
+        outname = self.subfolder + '.md'
+        outpath = os.path.join(self.lab_folder_path, outname)
         find_and_replace_one_file(inpath, outpath, self.repdict)
 
-
-    def prep_and_copy_top_level_md(self):
-        inpath = os.path.join(template_dir, 'top_level_outline_template.md')
-        outname = 'lecture_%0.2i_top_level_outline.md' % self.lectnum
-        outpath = os.path.join(self.lect_folder_path, outname)
-        find_and_replace_one_file(inpath, outpath, self.repdict)
-
-
-    def prep_and_copy_graph_paper(self):
-        inpath = os.path.join(template_dir, 'graph_paper.tex')
-        outname = 'graph_paper_lecture_%0.2i.tex' % self.lectnum
-        outpath = os.path.join(self.lect_folder_path, outname)
-        find_and_replace_one_file(inpath, outpath, self.repdict)
-        curdir = os.getcwd()
-        try:
-            os.chdir(self.lect_folder_path)
-            cmd = 'pdflatex %s' % outname
-            os.system(cmd)
-        finally:
-            os.chdir(curdir)
-            
 
     def prep_and_copy_notes_md(self):
-        inpath = os.path.join(template_dir, 'notes_after_lecture_template.md')
-        outname = 'notes_after_lecture_%0.2i.md' % self.lectnum
-        outpath = os.path.join(self.lect_folder_path, outname)
+        inpath = os.path.join(template_dir, 'lab_notes.md')
+        outname = 'notes_after_lab_%0.2i.md' % self.labnum
+        outpath = os.path.join(self.lab_folder_path, outname)
         find_and_replace_one_file(inpath, outpath, self.repdict)
 
         
-    def copy_mydefs_sty(self):
-        inpath = os.path.join(template_dir, 'mydefs.sty')
-        outpath = os.path.join(self.lect_folder_path, 'mydefs.sty')
-        if not os.path.exists(outpath):
-            shutil.copyfile(inpath, outpath)
-
-
-    def create_doc_cam_notes(self):
-        self.doc_cam_folder_path = os.path.join(self.lect_folder_path, \
-                                                'doc_cam') 
-        if not os.path.exists(self.doc_cam_folder_path):
-            os.mkdir(self.doc_cam_folder_path)
-
-        dc_name = 'doc_cam_notes.md'
-        notes_in_path = os.path.join(template_dir, dc_name)
-        notes_outpath = os.path.join(self.doc_cam_folder_path, dc_name)
-        if not os.path.exists(notes_outpath):
-            shutil.copyfile(notes_in_path, notes_outpath)
-        
-
     def go(self, event=None):
         # 0. check for valid entries
         #    - exit if not happy
@@ -324,13 +248,10 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         #    - add author
         #    - add learning outcomes slide
         repdict = self.build_repdict()
-        rwkos.make_dir(self.lect_folder_path)#<-- variable set in build_repdict()
-        self.prep_and_copy_slides_main_tex()
-        self.prep_and_copy_top_level_md()
+        rwkos.make_dir(self.lab_folder_path)#<-- variable set in build_repdict()
+        self.prep_and_copy_procedure()
         self.prep_and_copy_notes_md()
-        self.create_doc_cam_notes()
-        self.prep_and_copy_graph_paper()
-        self.copy_mydefs_sty()
+        
         #if not os.path.exists(subfolder_path):
         #    os.mkdir(subfolder_path)
 
@@ -346,13 +267,13 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
             
 
     def OnActivate(self, evt):
-        self.lecture_title_box.SetFocus()
+        self.lab_title_box.SetFocus()
         
         
     def OnInit(self):
         """Initialize the :py:class:`MyApp` instance; start by loading
         the xrc resource file and then add other stuff and bind the events"""
-        xrcfile = '/Users/kraussry/git/wxpython_guis/lecture_prep_xrc_GVSU.xrc'
+        xrcfile = '/Users/kraussry/git/wxpython_guis/lab_prep_xrc_GVSU.xrc'
         self.res = xrc.XmlResource(xrcfile)
 
         # main frame and panel ---------
@@ -362,14 +283,13 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
         self.coursechoice = xrc.XRCCTRL(self.frame,"course_choice")
         self.coursechoice.SetStringSelection('345')
-        self.lecture_number_box = xrc.XRCCTRL(self.frame,"lecture_number_box")
-        self.lecture_date_box = xrc.XRCCTRL(self.frame,"lecture_date_box")
+        self.lab_number_box = xrc.XRCCTRL(self.frame,"lab_number_box")
         self.root_folder_box = xrc.XRCCTRL(self.frame,"root_folder_box")
         self.root_browse = xrc.XRCCTRL(self.frame, "root_browse")
         self.go_button = xrc.XRCCTRL(self.frame, "go_button")
         self.next_button = xrc.XRCCTRL(self.frame, "next_button")
-        self.lecture_title_box = xrc.XRCCTRL(self.frame, "lecture_title_box")
-        self.lecture_title_box.SetFocus()
+        self.lab_title_box = xrc.XRCCTRL(self.frame, "lab_title_box")
+        self.lab_title_box.SetFocus()
         
         wx.EVT_CHOICE(self.coursechoice, self.coursechoice.GetId(), \
                       self.on_course_choice)
@@ -378,7 +298,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         wx.EVT_BUTTON(self.go_button, self.go_button.GetId(), \
                       self.go)
         wx.EVT_BUTTON(self.next_button, self.next_button.GetId(), \
-                      self.next_lecture)
+                      self.next_lab)
 
         self.menubar = self.frame.GetMenuBar()
         ## self.frame.Bind(wx.EVT_MENU, self.on_exit, \
@@ -400,7 +320,10 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         ##         id=xrc.XRCID('load_menu_item'))
 
         self.my_init()
-        self.frame.SetClientSize((625,350))
+        # Intial debugging
+        L4title = "Open-Loop DC Motor Control"
+        self.lab_title_box.SetValue(L4title)
+        self.frame.SetClientSize((625,300))
         self.frame.Show(1)
         self.SetTopWindow(self.frame)
         return True
