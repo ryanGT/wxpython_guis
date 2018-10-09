@@ -321,8 +321,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
         self.my_init()
         # Intial debugging
-        L4title = "Open-Loop DC Motor Control"
-        self.lab_title_box.SetValue(L4title)
+        #L4title = "Open-Loop DC Motor Control"
+        #self.lab_title_box.SetValue(L4title)
         self.frame.SetClientSize((625,300))
         self.frame.Show(1)
         self.SetTopWindow(self.frame)
