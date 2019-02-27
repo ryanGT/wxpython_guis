@@ -11,7 +11,6 @@
 # To Do:
 #
 # - allow multiple columns to be mapped
-# - make directories shown in text boxes relative to curdir or something
 # - allow xls or ods team grade files instead of just csv
 # - have a file dialog to allow final output csv to be renamed
 # - save the previous values of all widgets
@@ -77,6 +76,26 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
     ##     new_num = suggest_lab_number(course)
     ##     self.lab_number_box.SetValue(str(new_num))
 
+
+    def make_rel(self, pathin):
+        rp = relpath.relpath(pathin, self.root)
+        return rp
+    
+
+    def make_abs(self, pathin):
+        ap = os.path.join(self.root, pathin)
+        return ap
+
+    def path_to_box(self, mybox, mypath):
+        mybox.SetValue(self.make_rel(mypath))
+
+
+    def path_from_box(self, mybox):
+        rp = mybox.GetValue()
+        ap = self.make_abs(rp)
+        return ap
+
+
     def _browse(self, save_box, msg):
         mypath = wx_utils.my_file_dialog(parent=None, \
                                          start_dir=self.start_dir, \
@@ -84,11 +103,11 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
                                          )
         if mypath:
             #rp = relpath.relpath(folder_path, base=course_dir)
-            save_box.SetValue(mypath)
+            self.path_to_box(save_box, mypath)
 
 
     def get_team_grade_labels(self):
-        mypath = self.team_grades_folder_box.GetValue()
+        mypath = self.path_from_box(self.team_grades_folder_box)
         if mypath:
             print("mypath = " + mypath)
             myfile = txt_mixin.delimited_txt_file(mypath)
@@ -119,10 +138,12 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         
     def my_init(self):
         print("hello");
+        self.root = os.getcwd()
         team_csv_path = self.search_for_bb_teamlist()
         if team_csv_path is not None:
-            self.team_list_folder_box.SetValue(team_csv_path)
+            self.path_to_box(self.team_list_folder_box,team_csv_path)
         self.start_dir = "."
+
         #self.set_lab_number()
 
 
@@ -146,8 +167,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
     def go(self, event=None):
         print("going....")
-        team_grades_csv_path = self.team_grades_folder_box.GetValue()
-        team_list_csv_path = self.team_list_folder_box.GetValue()
+        team_grades_csv_path = self.path_from_box(self.team_grades_folder_box)
+        team_list_csv_path = self.path_from_box(self.team_list_folder_box)
         if not team_list_csv_path:
             # exit
             return None
