@@ -5,6 +5,20 @@
 #import wxversion
 #wxversion.ensureMinimal('2.8')
 
+
+#-------------------------
+#
+# To Do:
+#
+# - allow multiple columns to be mapped
+# - make directories shown in text boxes relative to curdir or something
+# - allow xls or ods team grade files instead of just csv
+# - have a file dialog to allow final output csv to be renamed
+# - stop saving team number with final output so BB doesn't try
+#   to add the team # column
+# - save the previous values of all widgets
+#
+#-------------------------
 import sys, time, os, gc, glob, shutil
 
 import wx
