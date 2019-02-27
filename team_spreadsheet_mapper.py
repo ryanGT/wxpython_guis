@@ -14,8 +14,6 @@
 # - make directories shown in text boxes relative to curdir or something
 # - allow xls or ods team grade files instead of just csv
 # - have a file dialog to allow final output csv to be renamed
-# - stop saving team number with final output so BB doesn't try
-#   to add the team # column
 # - save the previous values of all widgets
 #
 #-------------------------
@@ -179,10 +177,12 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         outname = "ind_mapped_" + col_str + ".csv"
         outname = rwkos.clean_filename(outname)
         print("outname: " + outname)
-        ind_mapper = ind_grade_mapper.ind_grade_mapper_v2(team_list_csv_path, \
-                                                          student_to_team, \
-                                                          team_grades, \
-                                                          outname)
+        #bb_in_path = self.search_for_bb_teamlist("bb*download.csv")
+        #print("bb_in_path = " + bb_in_path)
+        ind_mapper = ind_grade_mapper.ind_grade_mapper_v3_only_new(team_list_csv_path, \
+                                                                   student_to_team, \
+                                                                   team_grades, \
+                                                                   outname)
         ind_mapper.map_grades()
         ind_mapper.save()
         
@@ -191,10 +191,9 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         print("in OnActivate")
 
 
-    def search_for_bb_teamlist(self):
+    def search_for_bb_teamlist(self, csv_pat="*bb*download*team*.csv"):
         """Search in the current directory and up the tree for
         '*bb*download*team*.csv'"""
-        csv_pat = "*bb*download*team*.csv"
         folder = os.getcwd()
         while folder != os.path.sep:
             files = glob.glob(os.path.join(folder,csv_pat))
