@@ -41,14 +41,14 @@ def my_file_dialog(parent=None, \
 
     If the user clicks OK, the full filepath is returned.  If the user
     cancels the dialog, None is returned."""
-    flags = wx.CHANGE_DIR
+    flags = wx.FD_CHANGE_DIR
     
     if kind.lower() in ["open","load"]:
-        flags |= wx.OPEN
+        flags |= wx.FD_OPEN
     elif kind.lower() == "save":
-        flags |= wx.SAVE
+        flags |= wx.FD_SAVE
         if check_overwrite:
-            flags |= wx.OVERWRITE_PROMPT
+            flags |= wx.FD_OVERWRITE_PROMPT
             
         
     dlg = wx.FileDialog(parent, message=msg, \

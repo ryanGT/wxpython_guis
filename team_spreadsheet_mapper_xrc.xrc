@@ -1,0 +1,89 @@
+<?xml version="1.0" ?>
+<resource class="wxBoxSizer">
+  <object class="wxFrame" name="main_frame">
+    <title>Course Prep GUI</title>
+    <object class="wxPanel" name="main_panel">
+      <object class="wxBoxSizer">
+        <orient>wxVERTICAL</orient>
+        <object class="sizeritem">
+          <object class="wxStaticText" name="team_grades_dir_label">
+            <label>Team Grades Spreadsheet</label>
+          </object>
+          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxTextCtrl" name="team_grades_folder_box">
+            <size>600,-1</size>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxButton" name="team_grades_browse">
+            <label>Browse</label>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxALIGN_RIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxStaticText" name="grade_cols_label">
+            <label>Team Grades Columns</label>
+          </object>
+          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+                <option>0</option>
+                <border>5</border>
+		<flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+                <object class="wxListBox" name="list_box_1" base="EditListBox">
+		    <size>600,-1</size>
+                    <style>wxLB_SINGLE</style>
+                    <selection>-1</selection>
+                    <choices>
+                        <choice>choice 1</choice>
+                    </choices>
+                </object>
+        </object>
+        <object class="sizeritem">
+          <object class="wxStaticText" name="team_list_dir_label">
+            <label>Team List Spreadsheet</label>
+          </object>
+          <flag>wxTOP|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxTextCtrl" name="team_list_folder_box">
+            <size>600,-1</size>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxButton" name="team_list_browse">
+            <label>Browse</label>
+          </object>
+          <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxALIGN_RIGHT</flag>
+          <border>5</border>
+        </object>
+        <object class="sizeritem">
+          <object class="wxButton" name="go_button">
+            <label>Go</label>
+          </object>
+          <flag>wxALL|wxALIGN_CENTRE_HORIZONTAL</flag>
+          <border>5</border>
+        </object>
+      </object>
+    </object>
+    <object class="wxMenuBar" name="main_menu">
+      <object class="wxMenu" name="file_menu">
+        <label>File</label>
+        <object class="wxMenuItem" name="menu_go">
+          <label>Go</label>
+          <accel>ctrl+g</accel>
+        </object>
+      </object>
+    </object>
+  </object>
+</resource>

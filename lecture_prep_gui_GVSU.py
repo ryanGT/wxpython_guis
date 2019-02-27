@@ -299,6 +299,13 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
             shutil.copyfile(inpath, outpath)
 
 
+    def copy_notes_csv(self):
+        inpath = os.path.join(template_dir, 'note_pages.csv')
+        outpath = os.path.join(self.lect_folder_path, 'note_pages.csv')
+        if not os.path.exists(outpath):
+            shutil.copyfile(inpath, outpath)
+
+
     def create_doc_cam_notes(self):
         self.doc_cam_folder_path = os.path.join(self.lect_folder_path, \
                                                 'doc_cam') 
@@ -331,6 +338,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.create_doc_cam_notes()
         self.prep_and_copy_graph_paper()
         self.copy_mydefs_sty()
+        self.copy_notes_csv()
         #if not os.path.exists(subfolder_path):
         #    os.mkdir(subfolder_path)
 
