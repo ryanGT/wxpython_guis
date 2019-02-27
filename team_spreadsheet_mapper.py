@@ -46,7 +46,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
     def load(self, event=None):
         xml_path = wx_utils.my_file_dialog(parent=self.frame, \
-                                           start_dir=git_dir, \
+                                           start_dir=self.start_dir, \
                                            msg="Choose an xml file", \
                                            kind="open", \
                                            wildcard=xml_wildcard, \
@@ -66,8 +66,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
     ##     self.lab_number_box.SetValue(str(new_num))
 
     def _browse(self, save_box, msg):
-        mypath = wx_utils.my_file_dialog(parent=None,\
-                                         #start_dir=course_dir,\
+        mypath = wx_utils.my_file_dialog(parent=None, \
+                                         start_dir=self.start_dir, \
                                          msg=msg, \
                                          )
         if mypath:
@@ -110,6 +110,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         team_csv_path = self.search_for_bb_teamlist()
         if team_csv_path is not None:
             self.team_list_folder_box.SetValue(team_csv_path)
+        self.start_dir = "."
         #self.set_lab_number()
 
 
