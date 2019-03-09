@@ -248,6 +248,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.main_folder_box = xrc.XRCCTRL(self.frame,"main_folder_box")
         self.source_listbox = xrc.XRCCTRL(self.frame,"list_box_1")
         self.go_button = xrc.XRCCTRL(self.frame, "go_button")
+        self.go_catme_button = xrc.XRCCTRL(self.frame, \
+                                           "go_catme_button")        
         #self.lab_title_box.SetFocus()
         
         wx.EVT_BUTTON(self.source_browse, self.source_browse.GetId(), \
@@ -256,6 +258,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
                       self.on_main_browse)
         wx.EVT_BUTTON(self.go_button, self.go_button.GetId(), \
                       self.go)
+        wx.EVT_BUTTON(self.go_catme_button, self.go_catme_button.GetId(), \
+                      self.catme_go)
 
         self.menubar = self.frame.GetMenuBar()
         ## self.frame.Bind(wx.EVT_MENU, self.on_exit, \
@@ -278,11 +282,12 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         ## self.frame.Bind(wx.EVT_MENU, self.load, \
         ##         id=xrc.XRCID('load_menu_item'))
 
+        
         self.my_init()
         # Intial debugging
         #L4title = "Open-Loop DC Motor Control"
         #self.lab_title_box.SetValue(L4title)
-        self.frame.SetClientSize((625,300))
+        self.frame.SetClientSize((625,350))
         self.frame.Show(1)
         self.SetTopWindow(self.frame)
         return True
