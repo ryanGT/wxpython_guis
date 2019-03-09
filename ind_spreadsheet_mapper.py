@@ -84,6 +84,20 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
     ##     self.lab_number_box.SetValue(str(new_num))
 
 
+    def show_help(self, event=None):
+        msg = "This is gui was originally created to append " + \
+              "email addresses to a spreadsheet containing names and team numbers " + \
+              "for Catme.  Source Spreadsheet contains the column you want to append " + \
+              "and Main Spreadsheet is the one that is being appended.\n\n" + \
+              "Note: these are both individual spreadsheets, not team spreadsheets.\n\n" + \
+              "The Go Catme option seeks to change the column labels to those expected by Catme:\n" + \
+              "    first, last, email, id, and team."
+        caption = "Help Dialog"
+        dialog = wx.MessageDialog(self.frame, message=msg, caption=caption)
+        dialog.ShowModal()
+        dialog.Destroy()
+        
+
     def make_rel(self, pathin):
         rp = relpath.relpath(pathin, self.root)
         return rp
@@ -270,7 +284,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.frame.Bind(wx.EVT_MENU, self.catme_go, \
                         id=xrc.XRCID('menu_catme_go'))
         self.frame.Bind(wx.EVT_ACTIVATE, self.OnActivate)
-        
+        self.frame.Bind(wx.EVT_MENU, self.show_help, \
+                        id=xrc.XRCID('menu_show_help'))
         # set up accelerators
         accelEntries = []
         accelEntries.append((wx.ACCEL_CTRL, ord('G'), xrc.XRCID("menu_go")))

@@ -95,6 +95,13 @@
           <accel>ctrl+c</accel>
         </object>
       </object>
+      <object class="wxMenu" name="help_menu">
+        <label>Help</label>
+        <object class="wxMenuItem" name="menu_show_help">
+          <label>Help</label>
+          <accel>ctrl+h</accel>
+        </object>
+      </object>
     </object>
   </object>
 </resource>
