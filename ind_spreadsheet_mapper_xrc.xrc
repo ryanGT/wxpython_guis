@@ -83,6 +83,10 @@
           <label>Go</label>
           <accel>ctrl+g</accel>
         </object>
+        <object class="wxMenuItem" name="menu_catme_go">
+          <label>Catme Go</label>
+          <accel>ctrl+c</accel>
+        </object>
       </object>
     </object>
   </object>

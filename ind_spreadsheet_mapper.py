@@ -170,9 +170,18 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
                 return(labels[matches[0]])
             else:
                 return None
-            
+
+
+    def catme_go(self, event=None):
+        print("in catme_go")
+        self._go(catme=True)
+
 
     def go(self, event=None):
+        self._go(catme=False)
+        
+
+    def _go(self, catme=False):
         print("going....")
         source_csv_path = self.path_from_box(self.source_folder_box)
         main_csv_path = self.path_from_box(self.main_folder_box)
@@ -187,6 +196,9 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         src_label = self.source_listbox.GetString(ind)
         mymapper = spreadsheet_mapper.delimited_grade_spreadsheet(main_csv_path)
         mymapper.map_from_path(source_csv_path, src_label)
+        if catme:
+            mymapper.catme_labels()
+            
         # browse for output name
         outpath = wx_utils.my_file_dialog(parent=None, \
                                           start_dir=self.start_dir, \
@@ -251,6 +263,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
         self.frame.Bind(wx.EVT_MENU, self.go, \
                         id=xrc.XRCID('menu_go'))
+        self.frame.Bind(wx.EVT_MENU, self.catme_go, \
+                        id=xrc.XRCID('menu_catme_go'))
         self.frame.Bind(wx.EVT_ACTIVATE, self.OnActivate)
         
         # set up accelerators
