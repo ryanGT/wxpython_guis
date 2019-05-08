@@ -49,7 +49,8 @@ Students will
 
 
 # build dictionary to look up date from lecture number
-dates_path = '/Users/kraussry/gdrive_teaching/345_F18/lectures/dates_look_up.tsv'
+#dates_path = '/Users/kraussry/gdrive_teaching/345_F18/lectures/dates_look_up.tsv'
+dates_path = '/Users/kraussry/gdrive_teaching/445_SS19/lectures/dates_look_up.tsv'
 datesdb = txt_database.txt_database_from_file(dates_path)
 dates_dict =  dict(zip(datesdb.Class, datesdb.Date))
 
@@ -119,6 +120,9 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
     def get_course(self):
         ind = self.coursechoice.GetCurrentSelection()
         course = self.coursechoice.GetString(ind)
+        if course == '445':
+            course = '445/545'
+        
         return course
 
 
@@ -129,7 +133,10 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
     def guess_date(self):
         lect_num_str = self.lecture_number_box.GetValue()
-        date_str_1 = dates_dict[lect_num_str]#<-- month/day
+        try:
+            date_str_1 = dates_dict[lect_num_str]#<-- month/day
+        except:
+            date_str_1 = '0'
         #get year str
         now = datetime.datetime.now()
         year_str = str(now.year)[-2:]
@@ -239,6 +246,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.lect_folder_path = lect_folder_path
         self.subfolder = subfolder
         coursenum = self.coursechoice.GetStringSelection()
+        if coursenum == '445':
+            coursenum = '445/545'
         lectnum = int(self.get_lecture_number())
         self.lectnum = lectnum
         title = self.lecture_title_box.GetValue()
@@ -254,6 +263,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
                    '%%COURSENUM%%': str(coursenum), \
                    '%%DATE%%':date_str}
         self.repdict = repdict
+        print("repdict = ")
+        print(repdict)
         return repdict
 
         
@@ -369,7 +380,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.panel = xrc.XRCCTRL(self.frame,"main_panel")
 
         self.coursechoice = xrc.XRCCTRL(self.frame,"course_choice")
-        self.coursechoice.SetStringSelection('345')
+        #self.coursechoice.SetStringSelection('345')
+        self.coursechoice.SetStringSelection('445')
         self.lecture_number_box = xrc.XRCCTRL(self.frame,"lecture_number_box")
         self.lecture_date_box = xrc.XRCCTRL(self.frame,"lecture_date_box")
         self.root_folder_box = xrc.XRCCTRL(self.frame,"root_folder_box")

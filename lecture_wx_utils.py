@@ -10,7 +10,8 @@ semester_root = '/Users/rkrauss/siue/classes/Fall_2015/'
 
 course_roots = {'107':'/Users/kraussry/gdrive_teaching/107_W19', \
                 '345':'/Users/kraussry/gdrive_teaching/345_F18', \
-                '445':'/Users/kraussry/gdrive_teaching/445_SS18', \
+                '445':'/Users/kraussry/gdrive_teaching/445_SS19', \
+                '445/545':'/Users/kraussry/gdrive_teaching/445_SS19', \
                 }
 
 
