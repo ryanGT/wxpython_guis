@@ -25,6 +25,8 @@ template_dir = '/Users/kraussry/gdrive_teaching/general_teaching/lecture_templat
 
 import file_finder
 
+import html_md_to_jupyter_nb
+
 import pdb
 
 template = """=====================
@@ -49,8 +51,8 @@ Students will
 
 
 # build dictionary to look up date from lecture number
-#dates_path = '/Users/kraussry/gdrive_teaching/345_F18/lectures/dates_look_up.tsv'
-dates_path = '/Users/kraussry/gdrive_teaching/445_SS19/lectures/dates_look_up.tsv'
+dates_path = '/Users/kraussry/gdrive_teaching/345_F19/lectures/dates_look_up.tsv'
+#dates_path = '/Users/kraussry/gdrive_teaching/445_SS19/lectures/dates_look_up.tsv'
 datesdb = txt_database.txt_database_from_file(dates_path)
 dates_dict =  dict(zip(datesdb.Class, datesdb.Date))
 
@@ -121,7 +123,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         ind = self.coursechoice.GetCurrentSelection()
         course = self.coursechoice.GetString(ind)
         if course == '445':
-            course = '445/545'
+            #course = '445/545'
+            course = '345'
         
         return course
 
@@ -253,7 +256,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         title = self.lecture_title_box.GetValue()
         lect_num = int(self.get_lecture_number())
         date_str = self.get_date_str()
-        
+        self.title = title
+        self.date_str = date_str
         #lectnum_str = '%0.2i' % lectnum
         lectnum_str = '%i' % lectnum
         two_dig_lectnum = '%0.2i' % lectnum
@@ -281,6 +285,13 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         outpath = os.path.join(self.lect_folder_path, outname)
         find_and_replace_one_file(inpath, outpath, self.repdict)
 
+
+    def create_jupyter_outline(self):
+        outname = 'lecture_%0.2i_jupyter_outline.ipynb' % self.lectnum
+        outpath = os.path.join(self.lect_folder_path, outname)
+        title_line = '# Lecture %0.2i: %s' % (self.lectnum, self.title)
+        html_md_to_jupyter_nb.lecture_outline_jupyter_nb(title_line, outpath)
+        
 
     def prep_and_copy_graph_paper(self):
         inpath = os.path.join(template_dir, 'graph_paper.tex')
@@ -347,6 +358,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.prep_and_copy_top_level_md()
         self.prep_and_copy_notes_md()
         self.create_doc_cam_notes()
+        self.create_jupyter_outline()
         self.prep_and_copy_graph_paper()
         self.copy_mydefs_sty()
         self.copy_notes_csv()
@@ -380,8 +392,8 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
         self.panel = xrc.XRCCTRL(self.frame,"main_panel")
 
         self.coursechoice = xrc.XRCCTRL(self.frame,"course_choice")
-        #self.coursechoice.SetStringSelection('345')
-        self.coursechoice.SetStringSelection('445')
+        self.coursechoice.SetStringSelection('345')
+        #self.coursechoice.SetStringSelection('445')
         self.lecture_number_box = xrc.XRCCTRL(self.frame,"lecture_number_box")
         self.lecture_date_box = xrc.XRCCTRL(self.frame,"lecture_date_box")
         self.root_folder_box = xrc.XRCCTRL(self.frame,"root_folder_box")

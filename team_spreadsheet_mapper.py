@@ -78,7 +78,14 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
 
 
     def make_rel(self, pathin):
+        print('MRMRMRMMRMRMRMR')
+        print('')
+        print('relpath stuff:')
+        print('')
+        print('pathin = ' + pathin)
+        print('self.root = ' + self.root)
         rp = relpath.relpath(pathin, self.root)
+        print('rp = ' + rp)
         return rp
     
 
@@ -159,7 +166,7 @@ class MyApp(wx.App, wx_utils.gui_that_saves):
                 if q:
                     matches.append(i)
 
-            if len(matches) == 1:
+            if len(matches) >= 1:
                 return(labels[matches[0]])
             else:
                 return None
